@@ -37,13 +37,12 @@ function App() {
   const handleAddApprentice = async (newApprentice) => {
     try {
       await saveApprentice(newApprentice);
-      // Optimistic update or refresh
+      // Optimistic update
       setApprentices((prev) => [...prev, {
         ...newApprentice,
         id: newApprentice.matricula,
         column: 'not_evaluated',
         cycle: 1,
-        photo: null
       }]);
     } catch (error) {
       alert("Erro ao salvar na planilha. Verifique a conexão.");
@@ -53,7 +52,7 @@ function App() {
   };
 
   return (
-    <div className="flex min-h-screen bg-agrovale-soft-bg text-gray-800 font-inter">
+    <div className="flex min-h-screen bg-falcao-soft-bg text-gray-800 font-inter antialiased">
       {/* Sidebar Navigation */}
       <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} />
 
@@ -62,8 +61,8 @@ function App() {
         <div className="max-w-7xl mx-auto">
           {isLoading ? (
             <div className="h-[80vh] flex flex-col items-center justify-center space-y-4">
-              <div className="w-12 h-12 border-4 border-agrovale-green/20 border-t-agrovale-green rounded-full animate-spin" />
-              <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Carregando Dados...</p>
+              <div className="w-12 h-12 border-4 border-falcao-navy/10 border-t-falcao-navy rounded-full animate-spin" />
+              <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Sincronizando Falcão Engenharia...</p>
             </div>
           ) : (
             <AnimatePresence mode="wait">
@@ -99,17 +98,32 @@ function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="glass p-10 rounded-[40px] max-w-2xl"
+                  className="glass p-12 rounded-[48px] max-w-2xl"
                 >
-                  <h2 className="text-3xl font-bold mb-2">Configurações</h2>
-                  <p className="text-gray-500 mb-8">Administração do sistema Falcão Engenharia.</p>
+                  <div className="mb-8">
+                    <h2 className="text-3xl font-black text-falcao-navy mb-2">Configurações</h2>
+                    <p className="text-gray-400 font-medium">Painel de Controle Falcão Engenharia</p>
+                  </div>
 
                   <div className="space-y-6">
-                    <div className="p-6 bg-white/50 rounded-3xl border border-white/40 shadow-sm">
-                      <h3 className="font-bold text-gray-800">Conexão com a Planilha</h3>
-                      <div className="mt-4 flex items-center gap-3">
-                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-sm font-medium text-gray-600">Integrado: "AValiação Jovens" (Sheet: Aprendizes)</span>
+                    <div className="p-8 bg-white/40 rounded-[32px] border border-white/60 shadow-sm transition-all hover:shadow-md">
+                      <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                        Status da Conexão
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Planilha</span>
+                          <span className="font-bold text-falcao-navy">AValiação Jovens</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Aba Ativa</span>
+                          <span className="font-bold text-falcao-navy">Aprendizes</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Apps Script</span>
+                          <span className="text-[10px] font-mono bg-gray-100 px-2 py-1 rounded-md">AKfycbx0...hQcA</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -127,15 +141,17 @@ function App() {
         onSave={handleAddApprentice}
       />
 
-      {/* Floating Action Button (Optional/Modern touch) */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-agrovale-orange text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-orange-600 transition-colors z-40"
-      >
-        <span className="text-2xl font-bold">+</span>
-      </motion.button>
+      {/* Floating Action Button */}
+      {!isLoading && (
+        <motion.button
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsModalOpen(true)}
+          className="fixed bottom-10 right-10 w-16 h-16 bg-falcao-navy text-white rounded-[22px] shadow-2xl shadow-falcao-navy/40 flex items-center justify-center hover:bg-black transition-all z-40 group"
+        >
+          <span className="text-3xl font-light group-hover:rotate-90 transition-transform duration-300">+</span>
+        </motion.button>
+      )}
     </div>
   );
 }

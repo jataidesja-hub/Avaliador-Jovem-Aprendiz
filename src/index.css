@@ -3,10 +3,10 @@
 @import "tailwindcss";
 
 @theme {
-  --color-agrovale-green: #1b5e20;
-  --color-agrovale-orange: #ff9800;
-  --color-agrovale-light-green: #4c8c4a;
-  --color-agrovale-soft-bg: #f5f7f5;
+  --color-falcao-navy: #001f3f;
+  --color-falcao-black: #0a0a0a;
+  --color-falcao-accent: #0074d9;
+  --color-falcao-soft-bg: #f4f7f9;
 
   --font-inter: "Inter", sans-serif;
   --font-outfit: "Outfit", sans-serif;
@@ -16,17 +16,21 @@
 
 @layer base {
   :root {
-    --agrovale-green: #1b5e20;
-    --agrovale-orange: #ff9800;
-    --agrovale-light-green: #4c8c4a;
-    --agrovale-soft-bg: #f5f7f5;
+    --falcao-navy: #001f3f;
+    --falcao-black: #0a0a0a;
+    --falcao-accent: #0074d9;
+    --falcao-soft-bg: #f4f7f9;
   }
 }
 
 body {
-  @apply bg-agrovale-soft-bg font-inter text-gray-800 antialiased;
+  @apply bg-falcao-soft-bg font-inter text-gray-800 antialiased;
   margin: 0;
   min-height: 100vh;
+}
+
+::selection {
+  @apply bg-falcao-navy/20 text-falcao-navy;
 }
 
 h1,
@@ -35,17 +39,18 @@ h3,
 h4,
 h5,
 h6 {
-  @apply font-outfit font-semibold;
+  @apply font-outfit font-semibold tracking-tight;
 }
 
 /* Glassmorphism utility */
 .glass {
-  @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-[0_8px_32px_0_rgba(31, 38, 135, 0.07)];
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -53,5 +58,22 @@ h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+  @apply bg-gray-300/50 rounded-full hover:bg-falcao-navy/30 transition-colors;
+}
+
+/* Layout animations */
+.page-transition {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
