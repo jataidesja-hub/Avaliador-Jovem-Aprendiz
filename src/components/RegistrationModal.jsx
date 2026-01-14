@@ -21,19 +21,24 @@ const SelectField = ({ label, icon: Icon, options, ...props }) => (
             <Icon size={14} className="text-falcao-navy" />
             {label}
         </label>
-        <select
-            {...props}
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:border-falcao-navy focus:ring-4 focus:ring-falcao-navy/5 transition-all appearance-none cursor-pointer text-sm"
-        >
-            <option value="">Selecione...</option>
-            {options.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-        </select>
+        <div className="relative">
+            <select
+                {...props}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:border-falcao-navy focus:ring-4 focus:ring-falcao-navy/5 transition-all appearance-none cursor-pointer text-sm pr-10"
+            >
+                <option value="">Selecione...</option>
+                {options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                <Hash size={12} />
+            </div>
+        </div>
     </div>
 );
 
-export default function RegistrationModal({ isOpen, onClose, onSave }) {
+export default function RegistrationModal({ isOpen, onClose, onSave, sectors = [], supervisors = [] }) {
     const fileInputRef = useRef(null);
     const [formData, setFormData] = useState({
         matricula: '',
@@ -109,7 +114,7 @@ export default function RegistrationModal({ isOpen, onClose, onSave }) {
                         </div>
 
                         {/* Form */}
-                        <form className="p-8 grid grid-cols-1 md:grid-cols-2 gap-5" onSubmit={handleSubmit}>
+                        <form className="p-8 grid grid-cols-1 md:grid-cols-2 gap-5 overflow-y-auto max-h-[80vh]" onSubmit={handleSubmit}>
                             {/* Photo Upload Section */}
                             <div className="md:col-span-2 flex justify-center mb-2">
                                 <div
@@ -160,21 +165,17 @@ export default function RegistrationModal({ isOpen, onClose, onSave }) {
                                 value={formData.cargo}
                                 onChange={handleChange}
                                 required
-                                options={[
-                                    { value: 'Administrativo', label: 'Administrativo' },
-                                    { value: 'Operacional', label: 'Operacional' },
-                                    { value: 'Manutenção', label: 'Manutenção' },
-                                ]}
+                                options={sectors.map(s => ({ value: s, label: s }))}
                             />
 
-                            <InputField
+                            <SelectField
                                 label="Supervisor"
                                 icon={Users}
                                 name="supervisor"
                                 value={formData.supervisor}
                                 onChange={handleChange}
-                                placeholder="Nome do supervisor"
                                 required
+                                options={supervisors.map(s => ({ value: s, label: s }))}
                             />
 
                             <InputField

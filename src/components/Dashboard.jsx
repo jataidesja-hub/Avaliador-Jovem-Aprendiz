@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, UserCheck, Calendar, TrendingUp } from 'lucide-react';
+import { Users, UserCheck, Calendar, TrendingUp, Search } from 'lucide-react';
 import StatsCard from './StatsCard';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'framer-motion';
@@ -9,11 +9,12 @@ export default function Dashboard({ apprentices = [] }) {
     const female = apprentices.filter(a => a.genero === 'Feminino').length;
     const male = apprentices.filter(a => a.genero === 'Masculino').length;
 
-    const dataByRole = [
-        { role: 'Adm', count: apprentices.filter(a => a.cargo === 'Administrativo').length, color: '#1b5e20' },
-        { role: 'Operacional', count: apprentices.filter(a => a.cargo === 'Operacional').length, color: '#4c8c4a' },
-        { role: 'Manutenção', count: apprentices.filter(a => a.cargo === 'Manutenção').length, color: '#ff9800' },
-    ].filter(d => d.count > 0);
+    const sectors = [...new Set(apprentices.map(a => a.cargo))];
+    const dataByRole = sectors.map(sector => ({
+        role: sector,
+        count: apprentices.filter(a => a.cargo === sector).length,
+        color: '#001f3f' // Navy
+    })).filter(d => d.count > 0);
 
     const periodEvaluations = [
         { period: 'Ciclo 1', progress: total > 0 ? 10 : 0, status: total > 0 ? 'Em andamento' : 'Pendente' },
@@ -23,19 +24,19 @@ export default function Dashboard({ apprentices = [] }) {
     ];
 
     return (
-        <div className="space-y-8 pb-10">
+        <div className="space-y-10 pb-10">
             <header>
-                <h2 className="text-3xl font-bold text-gray-800">Visão Geral</h2>
-                <p className="text-gray-500">Bem-vindo ao sistema de avaliação do Jovem Aprendiz Falcão Engenharia.</p>
+                <h2 className="text-4xl font-black text-falcao-navy tracking-tight">Painel de Controle</h2>
+                <p className="text-gray-400 font-medium mt-1">Bem-vindo ao sistema de gestão Falcão Engenharia.</p>
             </header>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                <StatsCard label="Total Jovens" value={total} icon={Users} colorClass="bg-blue-500" />
-                <StatsCard label="Feminino" value={female} icon={UserCheck} colorClass="bg-pink-500" />
-                <StatsCard label="Masculino" value={male} icon={UserCheck} colorClass="bg-cyan-500" />
-                <StatsCard label="Média Idade" value={total > 0 ? "19.2" : "0"} icon={Calendar} colorClass="bg-orange-500" />
-                <StatsCard label="Média Geral" value={total > 0 ? "8.5" : "0"} icon={TrendingUp} colorClass="bg-agrovale-green" />
+                <StatsCard label="Total Jovens" value={total} icon={Users} colorClass="bg-falcao-navy" />
+                <StatsCard label="Feminino" value={female} icon={UserCheck} colorClass="bg-pink-600" />
+                <StatsCard label="Masculino" value={male} icon={UserCheck} colorClass="bg-blue-600" />
+                <StatsCard label="Média Idade" value={total > 0 ? "19.2" : "0"} icon={Calendar} colorClass="bg-orange-600" />
+                <StatsCard label="Média Geral" value={total > 0 ? "8.5" : "0"} icon={TrendingUp} colorClass="bg-green-600" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -43,24 +44,24 @@ export default function Dashboard({ apprentices = [] }) {
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="glass p-8 rounded-[32px]"
+                    className="glass p-10 rounded-[48px]"
                 >
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-gray-800">Distribuição por Cargo</h3>
-                        <span className="text-xs font-semibold text-agrovale-green bg-agrovale-green/10 px-3 py-1 rounded-full uppercase">Setores</span>
+                    <div className="flex justify-between items-center mb-8">
+                        <h3 className="text-2xl font-black text-gray-800">Cargos / Setores</h3>
+                        <span className="text-[10px] font-black text-falcao-navy bg-falcao-navy/5 border border-falcao-navy/10 px-3 py-1 rounded-full uppercase tracking-widest">Distribuição</span>
                     </div>
                     {total > 0 ? (
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={dataByRole} layout="vertical" margin={{ left: 20 }}>
-                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
                                     <XAxis type="number" hide />
-                                    <YAxis dataKey="role" type="category" axisLine={false} tickLine={false} tick={{ fill: '#4B5563', fontSize: 12 }} />
+                                    <YAxis dataKey="role" type="category" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 700 }} />
                                     <Tooltip
-                                        cursor={{ fill: 'rgba(0,0,0,0.05)' }}
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                        cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}
                                     />
-                                    <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={24}>
+                                    <Bar dataKey="count" radius={[0, 8, 8, 0]} barSize={20}>
                                         {dataByRole.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
@@ -69,8 +70,11 @@ export default function Dashboard({ apprentices = [] }) {
                             </ResponsiveContainer>
                         </div>
                     ) : (
-                        <div className="h-[300px] flex items-center justify-center text-gray-400 font-medium">
-                            Nenhum aprendiz cadastrado.
+                        <div className="h-[300px] flex flex-col items-center justify-center text-gray-300 gap-2">
+                            <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center">
+                                <Search size={24} />
+                            </div>
+                            <p className="text-sm font-bold uppercase tracking-tighter">Nenhum dado disponível</p>
                         </div>
                     )}
                 </motion.div>
@@ -79,33 +83,33 @@ export default function Dashboard({ apprentices = [] }) {
                 <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="glass p-8 rounded-[32px]"
+                    className="glass p-10 rounded-[48px]"
                 >
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-gray-800">Avaliações por Período</h3>
-                        <span className="text-xs font-semibold text-orange-500 bg-orange-100 px-3 py-1 rounded-full uppercase">Ciclos</span>
+                    <div className="flex justify-between items-center mb-8">
+                        <h3 className="text-2xl font-black text-gray-800">Progresso Anual</h3>
+                        <span className="text-[10px] font-black text-orange-600 bg-orange-50 border border-orange-100 px-3 py-1 rounded-full uppercase tracking-widest">Ciclos</span>
                     </div>
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         {periodEvaluations.map((item, idx) => (
-                            <div key={idx} className="space-y-2">
+                            <div key={idx} className="space-y-3">
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="font-semibold text-gray-700">{item.period}</span>
-                                    <span className="text-gray-500">{item.progress}%</span>
+                                    <span className="font-bold text-gray-700">{item.period}</span>
+                                    <span className="text-gray-400 font-black">{item.progress}%</span>
                                 </div>
-                                <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-2.5 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100/50">
                                     <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${item.progress}%` }}
                                         transition={{ duration: 1, delay: idx * 0.2 }}
-                                        className={`h-full rounded-full ${item.progress === 100 ? 'bg-agrovale-green' :
-                                            item.progress > 50 ? 'bg-agrovale-orange' :
-                                                'bg-orange-300'
+                                        className={`h-full rounded-full ${item.progress === 100 ? 'bg-green-500' :
+                                            item.progress > 0 ? 'bg-falcao-navy' :
+                                                'bg-gray-200'
                                             }`}
                                     />
                                 </div>
-                                <span className={`text-[10px] font-bold uppercase ${item.status === 'Concluído' ? 'text-agrovale-green' :
-                                    item.status === 'Em andamento' ? 'text-agrovale-orange' :
-                                        'text-gray-400'
+                                <span className={`text-[9px] font-black uppercase tracking-wider ${item.status === 'Concluído' ? 'text-green-500' :
+                                    item.status === 'Em andamento' ? 'text-falcao-navy' :
+                                        'text-gray-300'
                                     }`}>
                                     {item.status}
                                 </span>

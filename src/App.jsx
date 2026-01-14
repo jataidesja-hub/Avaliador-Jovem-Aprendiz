@@ -5,12 +5,17 @@ import EvaluationBoard from './components/EvaluationBoard';
 import RegistrationModal from './components/RegistrationModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchApprentices, saveApprentice } from './services/api';
+import { Plus, Trash2, Building2, UserCheck } from 'lucide-react';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [apprentices, setApprentices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Dynamic Config State
+  const [sectors, setSectors] = useState(['Administrativo', 'Operacional', 'Manutenção', 'RH', 'Financeiro']);
+  const [supervisors, setSupervisors] = useState(['Carlos Silva', 'Ana Oliveira', 'Roberto Santos']);
 
   useEffect(() => {
     const loadData = async () => {
@@ -40,7 +45,7 @@ function App() {
       // Optimistic update
       setApprentices((prev) => [...prev, {
         ...newApprentice,
-        id: newApprentice.matricula,
+        id: newApprentice.matricula || Date.now(),
         column: 'not_evaluated',
         cycle: 1,
       }]);
@@ -51,8 +56,19 @@ function App() {
     }
   };
 
+  // Config Handlers
+  const addSector = (name) => {
+    if (name && !sectors.includes(name)) setSectors([...sectors, name]);
+  };
+  const removeSector = (name) => setSectors(sectors.filter(s => s !== name));
+
+  const addSupervisor = (name) => {
+    if (name && !supervisors.includes(name)) setSupervisors([...supervisors, name]);
+  };
+  const removeSupervisor = (name) => setSupervisors(supervisors.filter(s => s !== name));
+
   return (
-    <div className="flex min-h-screen bg-falcao-soft-bg text-gray-800 font-inter antialiased">
+    <div className="flex min-h-screen bg-falcao-soft-bg text-gray-800 font-inter antialiased" lang="pt-BR">
       {/* Sidebar Navigation */}
       <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} />
 
@@ -98,31 +114,106 @@ function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="glass p-12 rounded-[48px] max-w-2xl"
+                  className="glass p-12 rounded-[48px] max-w-4xl"
                 >
-                  <div className="mb-8">
-                    <h2 className="text-3xl font-black text-falcao-navy mb-2">Configurações</h2>
-                    <p className="text-gray-400 font-medium">Painel de Controle Falcão Engenharia</p>
+                  <div className="mb-10">
+                    <h2 className="text-4xl font-black text-falcao-navy mb-2">Administração</h2>
+                    <p className="text-gray-400 font-medium">Gerencie os parâmetros do sistema Falcão Engenharia.</p>
                   </div>
 
-                  <div className="space-y-6">
-                    <div className="p-8 bg-white/40 rounded-[32px] border border-white/60 shadow-sm transition-all hover:shadow-md">
-                      <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        Status da Conexão
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Planilha</span>
-                          <span className="font-bold text-falcao-navy">AValiação Jovens</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Sectors Management */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-falcao-navy rounded-xl text-white">
+                          <Building2 size={20} />
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Aba Ativa</span>
-                          <span className="font-bold text-falcao-navy">Aprendizes</span>
+                        <h3 className="text-xl font-bold text-gray-800">Setores / Cargos</h3>
+                      </div>
+
+                      <div className="bg-white/40 rounded-[32px] border border-white/60 p-6 space-y-4">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            id="newSector"
+                            placeholder="Novo setor..."
+                            className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-falcao-navy/10"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                addSector(e.target.value);
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                          <button
+                            onClick={() => {
+                              const input = document.getElementById('newSector');
+                              addSector(input.value);
+                              input.value = '';
+                            }}
+                            className="bg-falcao-navy text-white p-2 rounded-xl hover:bg-black transition-colors"
+                          >
+                            <Plus size={20} />
+                          </button>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-400">Apps Script</span>
-                          <span className="text-[10px] font-mono bg-gray-100 px-2 py-1 rounded-md">AKfycbx0...hQcA</span>
+
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                          {sectors.map(s => (
+                            <div key={s} className="flex justify-between items-center group bg-white/60 p-3 rounded-xl border border-transparent hover:border-falcao-navy/20 transition-all">
+                              <span className="text-sm font-medium text-gray-700">{s}</span>
+                              <button onClick={() => removeSector(s)} className="text-red-400 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded-lg transition-all">
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Supervisors Management */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-falcao-navy rounded-xl text-white">
+                          <UserCheck size={20} />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-800">Supervisores</h3>
+                      </div>
+
+                      <div className="bg-white/40 rounded-[32px] border border-white/60 p-6 space-y-4">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            id="newSupervisor"
+                            placeholder="Novo supervisor..."
+                            className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-falcao-navy/10"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                addSupervisor(e.target.value);
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                          <button
+                            onClick={() => {
+                              const input = document.getElementById('newSupervisor');
+                              addSupervisor(input.value);
+                              input.value = '';
+                            }}
+                            className="bg-falcao-navy text-white p-2 rounded-xl hover:bg-black transition-colors"
+                          >
+                            <Plus size={20} />
+                          </button>
+                        </div>
+
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                          {supervisors.map(s => (
+                            <div key={s} className="flex justify-between items-center group bg-white/60 p-3 rounded-xl border border-transparent hover:border-falcao-navy/20 transition-all">
+                              <span className="text-sm font-medium text-gray-700">{s}</span>
+                              <button onClick={() => removeSupervisor(s)} className="text-red-400 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded-lg transition-all">
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -139,6 +230,8 @@ function App() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleAddApprentice}
+        sectors={sectors}
+        supervisors={supervisors}
       />
 
       {/* Floating Action Button */}

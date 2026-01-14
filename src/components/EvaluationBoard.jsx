@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoreHorizontal, User, Star, Search } from 'lucide-react';
+import { MoreHorizontal, User, Star, Search, PlusCircle } from 'lucide-react';
 
 const columns = [
-    { id: 'not_evaluated', title: 'Não Avaliados', color: 'bg-gray-55' },
+    { id: 'not_evaluated', title: 'Não Avaliados', color: 'bg-gray-50' },
     { id: 'dismiss', title: 'Desligar', color: 'bg-red-50' },
     { id: 'recover', title: 'Recuperar', color: 'bg-orange-50' },
     { id: 'fit', title: 'Apto Efetivação', color: 'bg-green-50' },
@@ -13,16 +13,20 @@ const ApprenticeCard = ({ apprentice }) => (
     <motion.div
         layoutId={`card-${apprentice.id}`}
         whileHover={{ y: -4, scale: 1.02 }}
-        className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 cursor-pointer mb-4 transition-all hover:shadow-md"
+        className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 cursor-pointer mb-4 transition-all hover:shadow-md group"
     >
         <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 border border-gray-100">
-                    <User size={24} />
+                <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 border border-gray-100 overflow-hidden">
+                    {apprentice.foto ? (
+                        <img src={apprentice.foto} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                        <User size={24} />
+                    )}
                 </div>
                 <div>
-                    <h4 className="font-bold text-gray-800 text-sm leading-tight">{apprentice.nome}</h4>
-                    <p className="text-[11px] text-gray-400 font-bold mt-0.5">{apprentice.cargo}</p>
+                    <h4 className="font-bold text-gray-800 text-sm leading-tight group-hover:text-falcao-navy transition-colors">{apprentice.nome}</h4>
+                    <p className="text-[11px] text-gray-400 font-bold mt-0.5 uppercase tracking-tighter">{apprentice.cargo}</p>
                 </div>
             </div>
             <button className="text-gray-300 hover:text-gray-600 transition-colors">
@@ -31,73 +35,85 @@ const ApprenticeCard = ({ apprentice }) => (
         </div>
 
         <div className="flex items-center justify-between mt-auto">
-            <div className="flex gap-1">
+            <div className="flex gap-1.5">
                 {[1, 2, 3, 4].map((c) => (
                     <div
                         key={c}
-                        className={`w-6 h-1.5 rounded-full ${c <= apprentice.cycle ? 'bg-agrovale-green' : 'bg-gray-100'}`}
+                        className={`w-6 h-1.5 rounded-full transition-all duration-500 ${c <= (apprentice.cycle || 1) ? 'bg-falcao-navy' : 'bg-gray-100'}`}
                     />
                 ))}
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] font-black text-agrovale-green uppercase bg-agrovale-green/10 px-2 py-0.5 rounded-full">
+            <div className="flex items-center gap-1.5 text-[10px] font-black text-falcao-navy uppercase bg-falcao-navy/5 px-2.5 py-1 rounded-full border border-falcao-navy/10">
                 <Star size={10} fill="currentColor" />
-                Ciclo {apprentice.cycle}
+                Ciclo {apprentice.cycle || 1}
             </div>
         </div>
     </motion.div>
 );
 
 export default function EvaluationBoard({ apprentices = [], setApprentices }) {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredApprentices = apprentices.filter(a =>
+        a.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.matricula.includes(searchTerm)
+    );
+
     return (
         <div className="h-full flex flex-col gap-8">
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-800">Quadro de Avaliações</h2>
-                    <p className="text-gray-500">Gestão de progresso dos jovens da Falcão Engenharia.</p>
+                    <h2 className="text-4xl font-black text-falcao-navy tracking-tight">Quadro de Avaliações</h2>
+                    <p className="text-gray-400 font-medium mt-1">Gestão de progresso dos jovens da Falcão Engenharia.</p>
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-80">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
                             type="text"
-                            placeholder="Buscar jovem..."
-                            className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-agrovale-green/10"
+                            placeholder="Buscar jovem aprendiz..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full bg-white border border-gray-100 rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-falcao-navy/5 focus:border-falcao-navy/20 transition-all shadow-sm"
                         />
                     </div>
-                    <button className="bg-agrovale-green text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-agrovale-green/90 shadow-lg shadow-agrovale-green/20 transition-all active:scale-95">
+                    <button className="bg-falcao-navy text-white px-6 py-3 rounded-2xl text-sm font-bold hover:bg-black shadow-xl shadow-falcao-navy/20 transition-all active:scale-95 flex items-center gap-2">
+                        <PlusCircle size={18} />
                         Novo Ciclo
                     </button>
                 </div>
             </header>
 
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-0 overflow-x-auto pb-6">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-0 overflow-x-auto pb-6 scrollbar-hide">
                 {columns.map((column) => (
-                    <div key={column.id} className="flex flex-col min-w-[300px]">
-                        <div className="flex items-center justify-between mb-5 px-2">
-                            <div className="flex items-center gap-2.5">
-                                <span className={`w-2.5 h-2.5 rounded-full ${column.id === 'dismiss' ? 'bg-red-500' :
-                                    column.id === 'recover' ? 'bg-orange-500' :
-                                        column.id === 'fit' ? 'bg-green-500' : 'bg-gray-400'
+                    <div key={column.id} className="flex flex-col min-w-[320px]">
+                        <div className="flex items-center justify-between mb-5 px-4">
+                            <div className="flex items-center gap-3">
+                                <span className={`w-3 h-3 rounded-full shadow-sm ${column.id === 'dismiss' ? 'bg-red-500' :
+                                        column.id === 'recover' ? 'bg-orange-500' :
+                                            column.id === 'fit' ? 'bg-green-500' : 'bg-falcao-navy'
                                     }`} />
-                                <h3 className="font-bold text-gray-700 text-sm uppercase tracking-wide">{column.title}</h3>
+                                <h3 className="font-black text-gray-600 text-xs uppercase tracking-[0.1em]">{column.title}</h3>
                             </div>
-                            <span className="bg-white border border-gray-100 text-[10px] font-black px-2.5 py-1 rounded-lg text-gray-400 shadow-sm">
-                                {apprentices.filter(a => a.column === column.id).length}
+                            <span className="bg-white border border-gray-100 text-[10px] font-black px-3 py-1 rounded-xl text-gray-400 shadow-sm">
+                                {filteredApprentices.filter(a => a.column === column.id).length}
                             </span>
                         </div>
 
-                        <div className={`flex-1 ${column.color} rounded-[32px] p-4 border border-gray-100/50 overflow-y-auto scrollbar-hide`}>
+                        <div className={`flex-1 ${column.color} rounded-[48px] p-5 border border-white/50 overflow-y-auto scrollbar-hide shadow-inner bg-opacity-40`}>
                             <AnimatePresence mode="popLayout">
-                                {apprentices.length > 0 ? (
-                                    apprentices
+                                {filteredApprentices.filter(a => a.column === column.id).length > 0 ? (
+                                    filteredApprentices
                                         .filter((a) => a.column === column.id)
                                         .map((apprentice) => (
                                             <ApprenticeCard key={apprentice.id} apprentice={apprentice} />
                                         ))
                                 ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-2 opacity-30">
-                                        <User size={32} className="text-gray-400" />
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">Vazio</p>
+                                    <div className="h-full flex flex-col items-center justify-center text-center p-10 space-y-3 opacity-20">
+                                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                            <User size={32} className="text-gray-400" />
+                                        </div>
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Coluna Vazia</p>
                                     </div>
                                 )}
                             </AnimatePresence>

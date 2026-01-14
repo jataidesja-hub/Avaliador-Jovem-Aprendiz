@@ -13,25 +13,25 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
             }`}
     >
         <Icon size={20} strokeWidth={active ? 2.5 : 2} />
-        <span className={`text-sm tracking-tight ${active ? 'font-bold' : 'font-medium'}`}>{label}</span>
+        <span className={`text-sm tracking-tight ${active ? 'font-black' : 'font-bold'}`} translate="no">{label}</span>
     </motion.button>
 );
 
 export default function Sidebar({ activeTab, setActiveTab }) {
     const menuItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
         { id: 'evaluations', label: 'Avaliações', icon: ClipboardList },
-        { id: 'register', label: 'Cadastrar', icon: UserPlus },
+        { id: 'register', label: 'Cadastro', icon: UserPlus },
     ];
 
     return (
         <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100/50 p-8 flex flex-col z-50">
             <div className="flex items-center gap-3 mb-12 px-1">
                 <div className="w-11 h-11 bg-falcao-navy rounded-2xl flex items-center justify-center text-white shadow-lg shadow-falcao-navy/20">
-                    <Shield size={24} />
+                    <Shield size={22} fill="currentColor" />
                 </div>
                 <div>
-                    <h1 className="text-sm font-black text-falcao-navy leading-tight uppercase tracking-tighter">Falcão</h1>
+                    <h1 className="text-[12px] font-black text-falcao-navy leading-tight uppercase tracking-widest">Falcão</h1>
                     <p className="text-[10px] text-gray-300 font-bold tracking-[0.2em] uppercase">Engenharia</p>
                 </div>
             </div>
@@ -56,6 +56,10 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                     onClick={() => setActiveTab('settings')}
                 />
                 <SidebarItem icon={LogOut} label="Sair" />
+            </div>
+
+            <div className="mt-8 p-4 bg-falcao-soft-bg rounded-2xl border border-gray-100/50">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter text-center">v2.1.0 • Falcão App</p>
             </div>
         </aside>
     );
