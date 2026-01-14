@@ -12,6 +12,8 @@
   --font-outfit: "Outfit", sans-serif;
 
   --blur-xs: 2px;
+
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
 
 @layer base {
@@ -44,7 +46,7 @@ h6 {
 
 /* Glassmorphism utility */
 .glass {
-  @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-[0_8px_32px_0_rgba(31, 38, 135, 0.07)];
+  @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-glass;
 }
 
 /* Scrollbar styling */
