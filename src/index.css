@@ -1,23 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --agrovale-green: #1b5e20;
-  --agrovale-orange: #ff9800;
-  --agrovale-light-green: #4c8c4a;
-  --agrovale-soft-bg: #f5f7f5;
+@theme {
+  --color-agrovale-green: #1b5e20;
+  --color-agrovale-orange: #ff9800;
+  --color-agrovale-light-green: #4c8c4a;
+  --color-agrovale-soft-bg: #f5f7f5;
+
+  --font-inter: "Inter", sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+
+  --blur-xs: 2px;
+}
+
+@layer base {
+  :root {
+    --agrovale-green: #1b5e20;
+    --agrovale-orange: #ff9800;
+    --agrovale-light-green: #4c8c4a;
+    --agrovale-soft-bg: #f5f7f5;
+  }
 }
 
 body {
-  @apply bg-agrovale-softBg font-inter text-gray-800;
+  @apply bg-agrovale-soft-bg font-inter text-gray-800 antialiased;
   margin: 0;
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   @apply font-outfit font-semibold;
 }
 
