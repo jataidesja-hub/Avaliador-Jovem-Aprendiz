@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [apprentices, setApprentices] = useState([]);
 
   const handleTabChange = (tab) => {
     if (tab === 'register') {
@@ -15,6 +16,17 @@ function App() {
     } else {
       setActiveTab(tab);
     }
+  };
+
+  const handleAddApprentice = (newApprentice) => {
+    setApprentices((prev) => [...prev, {
+      ...newApprentice,
+      id: Date.now(),
+      column: 'not_evaluated',
+      cycle: 1,
+      photo: null
+    }]);
+    setIsModalOpen(false);
   };
 
   return (
@@ -34,7 +46,7 @@ function App() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                <Dashboard />
+                <Dashboard apprentices={apprentices} />
               </motion.div>
             )}
 
@@ -47,7 +59,31 @@ function App() {
                 transition={{ duration: 0.3 }}
                 className="h-[calc(100vh-80px)]"
               >
-                <EvaluationBoard />
+                <EvaluationBoard apprentices={apprentices} setApprentices={setApprentices} />
+              </motion.div>
+            )}
+
+            {activeTab === 'settings' && (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="glass p-10 rounded-[40px] max-w-2xl"
+              >
+                <h2 className="text-3xl font-bold mb-2">Configurações</h2>
+                <p className="text-gray-500 mb-8">Administração do sistema Falcão Engenharia.</p>
+
+                <div className="space-y-6">
+                  <div className="p-6 bg-white/50 rounded-3xl border border-white/40 shadow-sm">
+                    <h3 className="font-bold text-gray-800">Conexão com a Planilha</h3>
+                    <div className="mt-4 flex items-center gap-3">
+                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-sm font-medium text-gray-600">Integrado: "AValiação Jovens" (Sheet: Aprendizes)</span>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -58,6 +94,7 @@ function App() {
       <RegistrationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSave={handleAddApprentice}
       />
 
       {/* Floating Action Button (Optional/Modern touch) */}

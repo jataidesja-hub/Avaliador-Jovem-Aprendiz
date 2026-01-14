@@ -33,7 +33,36 @@ const SelectField = ({ label, icon: Icon, options, ...props }) => (
     </div>
 );
 
-export default function RegistrationModal({ isOpen, onClose }) {
+export default function RegistrationModal({ isOpen, onClose, onSave }) {
+    const [formData, setFormData] = React.useState({
+        matricula: '',
+        nome: '',
+        cargo: '',
+        supervisor: '',
+        inicio: '',
+        termino: '',
+        genero: ''
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(formData);
+        setFormData({
+            matricula: '',
+            nome: '',
+            cargo: '',
+            supervisor: '',
+            inicio: '',
+            termino: '',
+            genero: ''
+        });
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -56,7 +85,7 @@ export default function RegistrationModal({ isOpen, onClose }) {
                         <div className="bg-agrovale-green p-6 text-white flex justify-between items-center">
                             <div>
                                 <h3 className="text-xl font-bold">Cadastrar Jovem Aprendiz</h3>
-                                <p className="text-agrovale-green/20 text-xs font-bold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded-full inline-block mt-1">Novo Registro</p>
+                                <p className="text-agrovale-green/20 text-xs font-bold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded-full inline-block mt-1">Falcão Engenharia</p>
                             </div>
                             <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                                 <X size={24} />
@@ -64,32 +93,80 @@ export default function RegistrationModal({ isOpen, onClose }) {
                         </div>
 
                         {/* Form */}
-                        <form className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={(e) => e.preventDefault()}>
-                            <InputField label="Matrícula" icon={Hash} placeholder="Ex: 123456" />
-                            <InputField label="Nome Completo" icon={User} placeholder="Nome do aprendiz" />
+                        <form className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSubmit}>
+                            <InputField
+                                label="Matrícula"
+                                icon={Hash}
+                                name="matricula"
+                                value={formData.matricula}
+                                onChange={handleChange}
+                                placeholder="Ex: 123456"
+                                required
+                            />
+                            <InputField
+                                label="Nome Completo"
+                                icon={User}
+                                name="nome"
+                                value={formData.nome}
+                                onChange={handleChange}
+                                placeholder="Nome do aprendiz"
+                                required
+                            />
 
                             <SelectField
                                 label="Cargo / Setor"
                                 icon={Briefcase}
+                                name="cargo"
+                                value={formData.cargo}
+                                onChange={handleChange}
+                                required
                                 options={[
-                                    { value: 'adm', label: 'Administrativo' },
-                                    { value: 'op', label: 'Operacional' },
-                                    { value: 'man', label: 'Manutenção' },
+                                    { value: 'Administrativo', label: 'Administrativo' },
+                                    { value: 'Operacional', label: 'Operacional' },
+                                    { value: 'Manutenção', label: 'Manutenção' },
                                 ]}
                             />
 
-                            <InputField label="Supervisor" icon={Users} placeholder="Nome do supervisor" />
+                            <InputField
+                                label="Supervisor"
+                                icon={Users}
+                                name="supervisor"
+                                value={formData.supervisor}
+                                onChange={handleChange}
+                                placeholder="Nome do supervisor"
+                                required
+                            />
 
-                            <InputField label="Data de Início" icon={Calendar} type="date" />
-                            <InputField label="Data de Término" icon={Calendar} type="date" />
+                            <InputField
+                                label="Data de Início"
+                                icon={Calendar}
+                                name="inicio"
+                                value={formData.inicio}
+                                onChange={handleChange}
+                                type="date"
+                                required
+                            />
+                            <InputField
+                                label="Data de Término"
+                                icon={Calendar}
+                                name="termino"
+                                value={formData.termino}
+                                onChange={handleChange}
+                                type="date"
+                                required
+                            />
 
                             <SelectField
                                 label="Gênero"
                                 icon={UserCircle}
+                                name="genero"
+                                value={formData.genero}
+                                onChange={handleChange}
+                                required
                                 options={[
-                                    { value: 'f', label: 'Feminino' },
-                                    { value: 'm', label: 'Masculino' },
-                                    { value: 'o', label: 'Outro' },
+                                    { value: 'Feminino', label: 'Feminino' },
+                                    { value: 'Masculino', label: 'Masculino' },
+                                    { value: 'Outro', label: 'Outro' },
                                 ]}
                             />
 

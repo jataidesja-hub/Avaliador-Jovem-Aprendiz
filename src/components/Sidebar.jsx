@@ -8,8 +8,8 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
         whileTap={{ scale: 0.95 }}
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${active
-                ? 'bg-agrovale-green text-white shadow-lg shadow-agrovale-green/20'
-                : 'text-gray-500 hover:bg-agrovale-green/10 hover:text-agrovale-green'
+            ? 'bg-agrovale-green text-white shadow-lg shadow-agrovale-green/20'
+            : 'text-gray-500 hover:bg-agrovale-green/10 hover:text-agrovale-green'
             }`}
     >
         <Icon size={20} />
@@ -31,8 +31,8 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                     <GraduationCap size={24} />
                 </div>
                 <div>
-                    <h1 className="text-xl font-bold text-gray-800 leading-tight">Agrovale</h1>
-                    <p className="text-xs text-agrovale-orange font-semibold tracking-wider uppercase">Jovem Aprendiz</p>
+                    <h1 className="text-lg font-bold text-gray-800 leading-tight">Falcão Engenharia</h1>
+                    <p className="text-[10px] text-agrovale-orange font-bold tracking-wider uppercase">Jovem Aprendiz</p>
                 </div>
             </div>
 
@@ -49,7 +49,12 @@ export default function Sidebar({ activeTab, setActiveTab }) {
             </nav>
 
             <div className="pt-6 border-t border-gray-100 flex flex-col gap-2">
-                <SidebarItem icon={Settings} label="Configurações" />
+                <SidebarItem
+                    icon={Settings}
+                    label="Configurações"
+                    active={activeTab === 'settings'}
+                    onClick={() => setActiveTab('settings')}
+                />
                 <SidebarItem icon={LogOut} label="Sair" />
             </div>
         </aside>
