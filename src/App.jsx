@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import EvaluationBoard from './components/EvaluationBoard';
 import RegistrationModal from './components/RegistrationModal';
+import EvaluationModal from './components/EvaluationModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchApprentices, saveApprentice } from './services/api';
 import { Plus, Trash2, Building2, UserCheck } from 'lucide-react';
@@ -10,6 +11,8 @@ import { Plus, Trash2, Building2, UserCheck } from 'lucide-react';
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEvalModalOpen, setIsEvalModalOpen] = useState(false);
+  const [selectedApprentice, setSelectedApprentice] = useState(null);
   const [apprentices, setApprentices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -53,6 +56,30 @@ function App() {
       alert("Erro ao salvar na planilha. Verifique a conexão.");
     } finally {
       setIsModalOpen(false);
+    }
+  };
+
+  const handleEvaluate = (apprentice) => {
+    setSelectedApprentice(apprentice);
+    setIsEvalModalOpen(true);
+  };
+
+  const handleSaveEvaluation = async (evaluationData) => {
+    try {
+      // In a real app, this would be an API call to save score and increment cycle
+      setApprentices((prev) => prev.map(a => {
+        if (a.id === evaluationData.apprenticeId) {
+          return {
+            ...a,
+            cycle: (a.cycle || 1) >= 4 ? 4 : (a.cycle || 1) + 1,
+            lastScore: evaluationData.score
+          };
+        }
+        return a;
+      }));
+      // Optional: Add some visual feedback/toast
+    } catch (error) {
+      console.error("Error saving evaluation:", error);
     }
   };
 
@@ -103,7 +130,11 @@ function App() {
                   transition={{ duration: 0.3 }}
                   className="h-[calc(100vh-80px)]"
                 >
-                  <EvaluationBoard apprentices={apprentices} setApprentices={setApprentices} />
+                  <EvaluationBoard
+                    apprentices={apprentices}
+                    setApprentices={setApprentices}
+                    onEvaluate={handleEvaluate}
+                  />
                 </motion.div>
               )}
 
@@ -232,6 +263,14 @@ function App() {
         onSave={handleAddApprentice}
         sectors={sectors}
         supervisors={supervisors}
+      />
+
+      {/* Evaluation Modal */}
+      <EvaluationModal
+        isOpen={isEvalModalOpen}
+        onClose={() => setIsEvalModalOpen(false)}
+        apprentice={selectedApprentice}
+        onSave={handleSaveEvaluation}
       />
 
       {/* Floating Action Button */}

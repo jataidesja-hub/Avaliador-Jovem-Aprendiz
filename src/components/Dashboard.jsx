@@ -9,6 +9,11 @@ export default function Dashboard({ apprentices = [] }) {
     const female = apprentices.filter(a => a.genero === 'Feminino').length;
     const male = apprentices.filter(a => a.genero === 'Masculino').length;
 
+    const evaluatedApprentices = apprentices.filter(a => a.lastScore !== undefined);
+    const averageScore = evaluatedApprentices.length > 0
+        ? (evaluatedApprentices.reduce((acc, curr) => acc + curr.lastScore, 0) / evaluatedApprentices.length).toFixed(1)
+        : "0";
+
     const sectors = [...new Set(apprentices.map(a => a.cargo))];
     const dataByRole = sectors.map(sector => ({
         role: sector,
@@ -36,7 +41,7 @@ export default function Dashboard({ apprentices = [] }) {
                 <StatsCard label="Feminino" value={female} icon={UserCheck} colorClass="bg-pink-600" />
                 <StatsCard label="Masculino" value={male} icon={UserCheck} colorClass="bg-blue-600" />
                 <StatsCard label="Média Idade" value={total > 0 ? "19.2" : "0"} icon={Calendar} colorClass="bg-orange-600" />
-                <StatsCard label="Média Geral" value={total > 0 ? "8.5" : "0"} icon={TrendingUp} colorClass="bg-green-600" />
+                <StatsCard label="Média Geral" value={averageScore} icon={TrendingUp} colorClass="bg-green-600" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
