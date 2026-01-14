@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-agro-bg text-agro-text font-sans antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md;
+  }
+  
+  .btn-primary {
+    @apply bg-agro-green text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all active:scale-95 disabled:opacity-50;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-agro-green border border-agro-green px-4 py-2 rounded-lg font-medium hover:bg-agro-lightgreen transition-all active:scale-95;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-agro-green/20 focus:border-agro-green transition-all;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+}
