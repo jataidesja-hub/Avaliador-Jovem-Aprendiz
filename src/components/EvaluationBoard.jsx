@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoreHorizontal, User, Star, Search, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, User, Star, Search, PlusCircle, Briefcase, Calendar } from 'lucide-react';
 
 const STATUS_MAP = {
     not_evaluated: { label: 'Pendente', color: 'text-gray-400 bg-gray-50 border-gray-100' },
@@ -119,10 +119,10 @@ const ApprenticeListItem = ({ apprentice, onEvaluate }) => (
                         return (
                             <div key={cycleNum} className="flex flex-col items-center gap-1">
                                 <div className={`w-10 h-1 rounded-full transition-all duration-500 ${isCurrent ? 'bg-orange-500' :
-                                        isPassed ? 'bg-falcao-navy' : 'bg-gray-100'
+                                    isPassed ? 'bg-falcao-navy' : 'bg-gray-100'
                                     }`} />
                                 <span className={`text-[8px] font-black tracking-tighter ${isCurrent ? 'text-orange-500' :
-                                        isPassed ? 'text-falcao-navy' : 'text-gray-300'
+                                    isPassed ? 'text-falcao-navy' : 'text-gray-300'
                                     }`}>
                                     {date}
                                 </span>
