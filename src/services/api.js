@@ -15,7 +15,8 @@ export const fetchApprentices = async () => {
             sexo: item.Sexo,
             foto: item.Foto || null,
             column: item.Status || 'not_evaluated',
-            cycle: 1
+            cycle: parseInt(item.Ciclo) || 1,
+            lastScore: parseFloat(item.Nota) || 0
         }));
     } catch (error) {
         console.error('Error fetching apprentices:', error);
@@ -36,23 +37,42 @@ export const saveApprentice = async (apprentice) => {
                 admissao: apprentice.admissao,
                 termino: apprentice.termino,
                 sexo: apprentice.genero,
-                foto: apprentice.foto, // Base64 picture
+                foto: apprentice.foto,
                 status: 'not_evaluated'
             }
         };
 
-        const response = await fetch(APPS_SCRIPT_URL, {
+        await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
 
         return { success: true };
     } catch (error) {
         console.error('Error saving apprentice:', error);
+        throw error;
+    }
+};
+
+export const updateApprenticeEvaluation = async (evaluationData) => {
+    try {
+        const payload = {
+            action: 'saveEvaluation',
+            data: evaluationData
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating evaluation:', error);
         throw error;
     }
 };

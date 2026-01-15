@@ -29,20 +29,41 @@ function doGet(e) {
 function doPost(e) {
   const params = JSON.parse(e.postData.contents);
   const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
   
-  if (params.action === 'add') {
+  // 1. ADICIONAR APRENDIZ
+  if (params.action === 'addApprentice') {
+    const d = params.data;
     sheet.appendRow([
       new Date(),
-      params.matricula,
-      params.nome,
-      params.cargo,
-      params.supervisor,
-      params.admissao,
-      params.nascimento,
-      params.sexo,
-      params.fotoUrl, // Aqui você pode salvar a URL da foto ou Base64 se for pequeno
-      'nao-avaliado'
+      d.matricula,
+      d.nome,
+      d.cargo,
+      d.supervisor,
+      d.admissao,
+      d.nascimento,
+      d.sexo,
+      d.foto,
+      'not_evaluated',
+      1, // Ciclo inicial
+      0  // Nota inicial
     ]);
+  }
+  
+  // 2. SALVAR AVALIAÇÃO
+  if (params.action === 'saveEvaluation') {
+    const d = params.data;
+    const rows = sheet.getDataRange().getValues();
+    
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i][1].toString() === d.apprenticeId.toString()) {
+        sheet.getCell(i + 1, 10).setValue(d.status || 'not_evaluated'); // Status (Coluna J)
+        sheet.getCell(i + 1, 11).setValue(d.cycleFinished);            // Ciclo (Coluna K)
+        sheet.getCell(i + 1, 12).setValue(d.score);                    // Nota (Coluna L)
+        break;
+      }
+    }
   }
   
   return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
@@ -56,7 +77,7 @@ function setup() {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow([
       'Timestamp', 'Matrícula', 'Nome', 'Cargo', 'Supervisor', 
-      'Admissão', 'Nascimento', 'Sexo', 'Foto', 'Status'
+      'Admissão', 'Nascimento', 'Sexo', 'Foto', 'Status', 'Ciclo', 'Nota'
     ]);
   }
 }

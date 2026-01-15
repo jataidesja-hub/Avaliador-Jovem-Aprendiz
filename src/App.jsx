@@ -5,7 +5,7 @@ import EvaluationBoard from './components/EvaluationBoard';
 import RegistrationModal from './components/RegistrationModal';
 import EvaluationModal from './components/EvaluationModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchApprentices, saveApprentice } from './services/api';
+import { fetchApprentices, saveApprentice, updateApprenticeEvaluation } from './services/api';
 import { Plus, Trash2, Building2, UserCheck } from 'lucide-react';
 
 function App() {
@@ -66,20 +66,22 @@ function App() {
 
   const handleSaveEvaluation = async (evaluationData) => {
     try {
-      // In a real app, this would be an API call to save score and increment cycle
+      await updateApprenticeEvaluation(evaluationData);
+
       setApprentices((prev) => prev.map(a => {
         if (a.id === evaluationData.apprenticeId) {
+          const nextCycle = (a.cycle || 1) >= 4 ? 4 : (a.cycle || 1) + 1;
           return {
             ...a,
-            cycle: (a.cycle || 1) >= 4 ? 4 : (a.cycle || 1) + 1,
+            cycle: nextCycle,
             lastScore: evaluationData.score
           };
         }
         return a;
       }));
-      // Optional: Add some visual feedback/toast
     } catch (error) {
       console.error("Error saving evaluation:", error);
+      alert("Erro ao salvar avaliação na planilha.");
     }
   };
 
