@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoreHorizontal, User, Star, Search, PlusCircle, Briefcase, Calendar } from 'lucide-react';
+import { MoreHorizontal, User, Star, Search, PlusCircle, Briefcase, Calendar, Pencil, Trash2 } from 'lucide-react';
 
 const STATUS_MAP = {
     not_evaluated: { label: 'Pendente', color: 'text-gray-400 bg-gray-50 border-gray-100' },
@@ -42,7 +42,7 @@ const calculateAge = (dateString) => {
     } catch (e) { return ''; }
 };
 
-const ApprenticeListItem = ({ apprentice, onEvaluate }) => (
+const ApprenticeListItem = ({ apprentice, onEvaluate, onEdit, onDelete }) => (
     <motion.div
         layout
         initial={{ opacity: 0, scale: 0.98 }}
@@ -61,9 +61,27 @@ const ApprenticeListItem = ({ apprentice, onEvaluate }) => (
 
         {/* Info Principal */}
         <div className="flex-1 min-w-0">
-            <h4 className="font-black text-gray-800 text-lg group-hover:text-falcao-navy transition-colors truncate">
-                {apprentice.nome}
-            </h4>
+            <div className="flex items-center gap-3">
+                <h4 className="font-black text-gray-800 text-lg group-hover:text-falcao-navy transition-colors truncate">
+                    {apprentice.nome}
+                </h4>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onEdit(apprentice); }}
+                        className="p-1.5 hover:bg-blue-50 text-blue-400 rounded-lg transition-colors"
+                        title="Editar"
+                    >
+                        <Pencil size={14} />
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onDelete(apprentice.matricula); }}
+                        className="p-1.5 hover:bg-red-50 text-red-400 rounded-lg transition-colors"
+                        title="Excluir"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                </div>
+            </div>
             <div className="flex items-center gap-3 mt-1">
                 <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">
                     <Briefcase size={10} className="text-falcao-navy" />
@@ -145,7 +163,7 @@ const ApprenticeListItem = ({ apprentice, onEvaluate }) => (
     </motion.div>
 );
 
-export default function EvaluationBoard({ apprentices = [], setApprentices, onEvaluate }) {
+export default function EvaluationBoard({ apprentices = [], setApprentices, onEvaluate, onEdit, onDelete }) {
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredApprentices = apprentices.filter(a =>
@@ -182,6 +200,8 @@ export default function EvaluationBoard({ apprentices = [], setApprentices, onEv
                                 key={apprentice.id}
                                 apprentice={apprentice}
                                 onEvaluate={onEvaluate}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
                             />
                         ))
                     ) : (

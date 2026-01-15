@@ -38,7 +38,7 @@ const SelectField = ({ label, icon: Icon, options, ...props }) => (
     </div>
 );
 
-export default function RegistrationModal({ isOpen, onClose, onSave, sectors = [], supervisors = [] }) {
+export default function RegistrationModal({ isOpen, onClose, onSave, sectors = [], supervisors = [], apprentice = null }) {
     const fileInputRef = useRef(null);
     const [formData, setFormData] = useState({
         matricula: '',
@@ -51,6 +51,28 @@ export default function RegistrationModal({ isOpen, onClose, onSave, sectors = [
         genero: '',
         foto: null
     });
+
+    // Load apprentice data if in edit mode
+    React.useEffect(() => {
+        if (apprentice) {
+            setFormData({
+                matricula: apprentice.matricula || '',
+                nome: apprentice.nome || '',
+                cargo: apprentice.cargo || '',
+                supervisor: apprentice.supervisor || '',
+                nascimento: apprentice.nascimento ? new Date(apprentice.nascimento).toISOString().split('T')[0] : '',
+                admissao: apprentice.admissao ? new Date(apprentice.admissao).toISOString().split('T')[0] : '',
+                termino: apprentice.termino ? new Date(apprentice.termino).toISOString().split('T')[0] : '',
+                genero: apprentice.genero || apprentice.sexo || '',
+                foto: apprentice.foto || null
+            });
+        } else {
+            setFormData({
+                matricula: '', nome: '', cargo: '', supervisor: '',
+                nascimento: '', admissao: '', termino: '', genero: '', foto: null
+            });
+        }
+    }, [apprentice, isOpen]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -70,18 +92,8 @@ export default function RegistrationModal({ isOpen, onClose, onSave, sectors = [
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSave(formData);
-        setFormData({
-            matricula: '',
-            nome: '',
-            cargo: '',
-            supervisor: '',
-            nascimento: '',
-            admissao: '',
-            termino: '',
-            genero: '',
-            foto: null
-        });
+        onSave(formData, !!apprentice); // Pass true if editing
+        onClose();
     };
 
     return (
@@ -105,7 +117,9 @@ export default function RegistrationModal({ isOpen, onClose, onSave, sectors = [
                         {/* Header */}
                         <div className="bg-falcao-navy p-6 text-white flex justify-between items-center">
                             <div>
-                                <h3 className="text-xl font-bold">Cadastrar Jovem Aprendiz</h3>
+                                <h3 className="text-xl font-bold">
+                                    {apprentice ? 'Editar Jovem Aprendiz' : 'Cadastrar Jovem Aprendiz'}
+                                </h3>
                                 <p className="text-white/20 text-xs font-bold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded-full inline-block mt-1">Falcão Engenharia</p>
                             </div>
                             <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -147,6 +161,8 @@ export default function RegistrationModal({ isOpen, onClose, onSave, sectors = [
                                 onChange={handleChange}
                                 placeholder="Ex: 123456"
                                 required
+                                disabled={!!apprentice}
+                                className={`w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:border-falcao-navy focus:ring-4 focus:ring-falcao-navy/5 transition-all text-sm ${apprentice ? 'opacity-60 cursor-not-allowed bg-gray-100' : ''}`}
                             />
                             <InputField
                                 label="Nome Completo"

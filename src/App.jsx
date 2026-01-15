@@ -5,7 +5,7 @@ import EvaluationBoard from './components/EvaluationBoard';
 import RegistrationModal from './components/RegistrationModal';
 import EvaluationModal from './components/EvaluationModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchApprentices, saveApprentice, updateApprenticeEvaluation } from './services/api';
+import { fetchApprentices, saveApprentice, updateApprenticeEvaluation, updateApprentice, deleteApprentice } from './services/api';
 import { Plus, Trash2, Building2, UserCheck } from 'lucide-react';
 
 function App() {
@@ -13,6 +13,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEvalModalOpen, setIsEvalModalOpen] = useState(false);
   const [selectedApprentice, setSelectedApprentice] = useState(null);
+  const [editingApprentice, setEditingApprentice] = useState(null);
   const [apprentices, setApprentices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -42,20 +43,43 @@ function App() {
     }
   };
 
-  const handleAddApprentice = async (newApprentice) => {
+  const handleAddApprentice = async (newApprentice, isEdit = false) => {
     try {
-      await saveApprentice(newApprentice);
-      // Optimistic update
-      setApprentices((prev) => [...prev, {
-        ...newApprentice,
-        id: newApprentice.matricula || Date.now(),
-        column: 'not_evaluated',
-        cycle: 1,
-      }]);
+      if (isEdit) {
+        await updateApprentice(newApprentice);
+        setApprentices(prev => prev.map(a =>
+          a.matricula === newApprentice.matricula ? { ...a, ...newApprentice } : a
+        ));
+      } else {
+        await saveApprentice(newApprentice);
+        setApprentices((prev) => [...prev, {
+          ...newApprentice,
+          id: newApprentice.matricula || Date.now(),
+          column: 'not_evaluated',
+          cycle: 1,
+        }]);
+      }
     } catch (error) {
-      alert("Erro ao salvar na planilha. Verifique a conexão.");
+      alert("Erro ao processar dados. Verifique a conexão.");
     } finally {
       setIsModalOpen(false);
+      setEditingApprentice(null);
+    }
+  };
+
+  const handleEdit = (apprentice) => {
+    setEditingApprentice(apprentice);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (matricula) => {
+    if (window.confirm("Tem certeza que deseja excluir este jovem aprendiz?")) {
+      try {
+        await deleteApprentice(matricula);
+        setApprentices(prev => prev.filter(a => a.matricula !== matricula));
+      } catch (error) {
+        alert("Erro ao excluir.");
+      }
     }
   };
 
@@ -136,6 +160,8 @@ function App() {
                     apprentices={apprentices}
                     setApprentices={setApprentices}
                     onEvaluate={handleEvaluate}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
                   />
                 </motion.div>
               )}
@@ -261,10 +287,14 @@ function App() {
       {/* Registration Modal */}
       <RegistrationModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingApprentice(null);
+        }}
         onSave={handleAddApprentice}
         sectors={sectors}
         supervisors={supervisors}
+        apprentice={editingApprentice}
       />
 
       {/* Evaluation Modal */}

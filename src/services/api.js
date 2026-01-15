@@ -76,3 +76,45 @@ export const updateApprenticeEvaluation = async (evaluationData) => {
         throw error;
     }
 };
+
+export const updateApprentice = async (apprenticeData) => {
+    try {
+        const payload = {
+            action: 'updateApprentice',
+            data: apprenticeData
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating apprentice:', error);
+        throw error;
+    }
+};
+
+export const deleteApprentice = async (matricula) => {
+    try {
+        const payload = {
+            action: 'deleteApprentice',
+            matricula: matricula
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting apprentice:', error);
+        throw error;
+    }
+};
