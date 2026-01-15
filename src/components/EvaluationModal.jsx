@@ -5,35 +5,62 @@ import { X, CheckCircle2, Star, AlertCircle, TrendingUp } from 'lucide-react';
 const EVALUATION_QUESTIONS = [
     {
         id: 'q1',
-        text: 'Assiduidade e Pontualidade',
-        description: 'Cumpre a jornada de trabalho conforme o contrato, evitando faltas e atrasos injustificados.',
-        weight: 3
+        text: 'Postura Profissional',
+        description: 'Comprometimento com Horários, Apresentação e Conduta, Segurança e Normas.',
+        weight: 25
     },
     {
         id: 'q2',
-        text: 'Produtividade e Qualidade',
-        description: 'Desenvolve as tarefas com precisão, organização e dentro dos prazos estabelecidos.',
-        weight: 3
+        text: 'Eficiência Operacional',
+        description: 'Qualidade da Entrega, Organização Pessoal, Cumprimento de Prazos.',
+        weight: 20
     },
     {
         id: 'q3',
-        text: 'Proatividade e Iniciativa',
-        description: 'Demonstra interesse em aprender, busca novos conhecimentos e antecipa necessidades do setor.',
-        weight: 2
+        text: 'Integração e Trabalho em Equipe',
+        description: 'Colaboração Ativa, Comunicação Assertiva, Receptividade a Feedbacks.',
+        weight: 15
     },
     {
         id: 'q4',
-        text: 'Relacionamento e Trabalho em Equipe',
-        description: 'Relaciona-se de forma cordial e profissional com colegas e supervisores.',
-        weight: 2
+        text: 'Protagonismo e Aprendizado',
+        description: 'Busca por Conhecimento, Aplicação Prática do Curso, Autonomia Gradual.',
+        weight: 20
+    },
+    {
+        id: 'q5',
+        text: 'Atitude e Resolução de Problemas',
+        description: 'Iniciativa Própria, Adaptabilidade, Ética e Sigilo.',
+        weight: 20
     }
 ];
 
 const OPTIONS = [
-    { label: 'Não Atende', value: 0, color: 'bg-red-100 text-red-600 border-red-200' },
-    { label: 'Em Desenvolvimento', value: 5, color: 'bg-orange-100 text-orange-600 border-orange-200' },
-    { label: 'Atende Expectativas', value: 8, color: 'bg-blue-100 text-blue-600 border-blue-200' },
-    { label: 'Supera Expectativas', value: 10, color: 'bg-green-100 text-green-600 border-green-200' }
+    {
+        label: 'Insuficiente',
+        value: 1,
+        description: 'O aprendiz não atinge os requisitos básicos e precisa de correção imediata.'
+    },
+    {
+        label: 'Em Adaptação',
+        value: 2,
+        description: 'Demonstra esforço, mas ainda comete erros frequentes ou precisa de supervisão total.'
+    },
+    {
+        label: 'Atende o Esperado',
+        value: 3,
+        description: 'Cumpre todas as obrigações com qualidade e autonomia compatível com o cargo.'
+    },
+    {
+        label: 'Acima da Média',
+        value: 4,
+        description: 'Frequentemente supera as expectativas e demonstra proatividade constante.'
+    },
+    {
+        label: 'Exemplar',
+        value: 5,
+        description: 'Atua com maturidade superior à esperada para um aprendiz, sendo referência para os outros.'
+    }
 ];
 
 export default function EvaluationModal({ isOpen, onClose, apprentice, onSave }) {
@@ -55,7 +82,7 @@ export default function EvaluationModal({ isOpen, onClose, apprentice, onSave })
             }
         });
 
-        return totalWeight > 0 ? (totalWeightedScore / totalWeight).toFixed(1) : 0;
+        return totalWeight > 0 ? (totalWeightedScore / totalWeight).toFixed(1) : "0.0";
     };
 
     const isComplete = EVALUATION_QUESTIONS.every(q => answers[q.id] !== undefined);
@@ -127,21 +154,26 @@ export default function EvaluationModal({ isOpen, onClose, apprentice, onSave })
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 ml-12">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 ml-12">
                                         {OPTIONS.map((opt) => (
                                             <button
                                                 key={opt.value}
                                                 type="button"
                                                 onClick={() => handleSelect(q.id, opt.value)}
-                                                className={`px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-tighter border-2 transition-all ${answers[q.id] === opt.value
-                                                        ? 'bg-falcao-navy border-falcao-navy text-white shadow-lg shadow-falcao-navy/20'
-                                                        : 'bg-gray-50 border-transparent text-gray-400 hover:border-gray-200'
+                                                className={`px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-tighter border-2 transition-all flex flex-col items-center text-center leading-tight ${answers[q.id] === opt.value
+                                                    ? 'bg-falcao-navy border-falcao-navy text-white shadow-lg shadow-falcao-navy/20'
+                                                    : 'bg-gray-50 border-transparent text-gray-400 hover:border-gray-200'
                                                     }`}
                                             >
                                                 {opt.label}
                                             </button>
                                         ))}
                                     </div>
+                                    {answers[q.id] !== undefined && (
+                                        <p className="text-[10px] text-falcao-navy font-bold mt-2 ml-12 animate-in fade-in slide-in-from-left-2 uppercase tracking-tighter opacity-70">
+                                            {OPTIONS.find(o => o.value === answers[q.id])?.description}
+                                        </p>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -151,7 +183,7 @@ export default function EvaluationModal({ isOpen, onClose, apprentice, onSave })
                             <div className="flex items-center gap-6">
                                 <div className="text-center">
                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Nota Final</p>
-                                    <div className={`text-4xl font-black ${parseFloat(calculateTotal()) >= 7 ? 'text-green-500' : 'text-orange-500'}`}>
+                                    <div className={`text-4xl font-black ${parseFloat(calculateTotal()) >= 3.0 ? 'text-green-500' : 'text-orange-500'}`}>
                                         {calculateTotal()}
                                     </div>
                                 </div>
@@ -174,8 +206,8 @@ export default function EvaluationModal({ isOpen, onClose, apprentice, onSave })
                                     onClick={handleSubmit}
                                     disabled={!isComplete}
                                     className={`px-10 py-4 font-black rounded-2xl transition-all text-xs uppercase tracking-widest shadow-xl flex items-center gap-2 ${isComplete
-                                            ? 'bg-falcao-navy text-white hover:bg-black shadow-falcao-navy/20'
-                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed grayscale'
+                                        ? 'bg-falcao-navy text-white hover:bg-black shadow-falcao-navy/20'
+                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed grayscale'
                                         }`}
                                 >
                                     <Star size={18} />

@@ -35,6 +35,21 @@ const ApprenticeCard = ({ apprentice, onEvaluate }) => (
         </div>
 
         <div className="space-y-4 mt-auto">
+            {apprentice.lastScore && (
+                <div className="flex items-center gap-1.5 mb-1">
+                    <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                                key={s}
+                                size={12}
+                                className={`${s <= Math.round(apprentice.lastScore) ? 'fill-orange-400 text-orange-400' : 'text-gray-100'}`}
+                            />
+                        ))}
+                    </div>
+                    <span className="text-[10px] font-black text-gray-400">{apprentice.lastScore}</span>
+                </div>
+            )}
+
             <div className="flex items-center justify-between">
                 <div className="flex gap-1.5">
                     {[1, 2, 3, 4].map((c) => (
