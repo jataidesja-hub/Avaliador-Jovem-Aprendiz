@@ -9,6 +9,24 @@ const STATUS_MAP = {
     fit: { label: 'Apto', color: 'text-green-500 bg-green-50 border-green-100' },
 };
 
+const formatDate = (date) => {
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+};
+
+const getCycleDates = (admissionDate) => {
+    if (!admissionDate) return [];
+    const dates = [];
+    const baseDate = new Date(admissionDate);
+
+    // Cada ciclo ocorre a cada 3 meses (4 ciclos em 1 ano)
+    for (let i = 1; i <= 4; i++) {
+        const cycleDate = new Date(baseDate);
+        cycleDate.setMonth(baseDate.getMonth() + (i * 3));
+        dates.push(formatDate(cycleDate));
+    }
+    return dates;
+};
+
 const calculateAge = (dateString) => {
     if (!dateString) return '';
     try {
@@ -91,14 +109,26 @@ const ApprenticeListItem = ({ apprentice, onEvaluate }) => (
         {/* Botão Avaliar */}
         <div className="flex items-center gap-6">
             <div className="flex flex-col items-end">
-                <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-1.5">Progresso</span>
-                <div className="flex gap-1">
-                    {[1, 2, 3, 4].map((c) => (
-                        <div
-                            key={c}
-                            className={`w-6 h-1 rounded-full transition-all duration-500 ${c <= (apprentice.cycle || 1) ? 'bg-falcao-navy' : 'bg-gray-100'}`}
-                        />
-                    ))}
+                <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-1.5">Cronograma / Ciclos</span>
+                <div className="flex gap-1.5">
+                    {getCycleDates(apprentice.admissao).map((date, idx) => {
+                        const cycleNum = idx + 1;
+                        const isCurrent = cycleNum === (apprentice.cycle || 1);
+                        const isPassed = cycleNum < (apprentice.cycle || 1);
+
+                        return (
+                            <div key={cycleNum} className="flex flex-col items-center gap-1">
+                                <div className={`w-10 h-1 rounded-full transition-all duration-500 ${isCurrent ? 'bg-orange-500' :
+                                        isPassed ? 'bg-falcao-navy' : 'bg-gray-100'
+                                    }`} />
+                                <span className={`text-[8px] font-black tracking-tighter ${isCurrent ? 'text-orange-500' :
+                                        isPassed ? 'text-falcao-navy' : 'text-gray-300'
+                                    }`}>
+                                    {date}
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
             <button
