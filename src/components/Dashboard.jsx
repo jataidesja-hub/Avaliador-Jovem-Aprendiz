@@ -21,8 +21,25 @@ export default function Dashboard({ apprentices = [] }) {
     };
 
     const normalizeGender = (g) => g ? g.toString().trim().toLowerCase() : '';
+
+    // DEBUG: Log dos dados brutos de sexo
+    console.log('=== DEBUG APRENDIZES ===');
+    console.log('Total de aprendizes:', apprentices.length);
+    apprentices.forEach((a, idx) => {
+        console.log(`[${idx + 1}] ${a.nome}:`);
+        console.log(`  - Sexo (raw): "${a.sexo}"`);
+        console.log(`  - Sexo (normalizado): "${normalizeGender(a.sexo)}"`);
+        console.log(`  - Matrícula: ${a.matricula}`);
+    });
+
     const female = apprentices.filter(a => normalizeGender(a.sexo) === 'feminino').length;
     const male = apprentices.filter(a => normalizeGender(a.sexo) === 'masculino').length;
+
+    console.log('Contagem:');
+    console.log(`  - Feminino: ${female}`);
+    console.log(`  - Masculino: ${male}`);
+    console.log(`  - Outros/Vazio: ${apprentices.length - female - male}`);
+    console.log('========================');
 
     const ages = apprentices.map(a => calculateAge(a.nascimento)).filter(age => age !== null);
     const averageAge = ages.length > 0

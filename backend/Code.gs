@@ -101,12 +101,19 @@ function doPost(e) {
     for (let i = 1; i < rows.length; i++) {
         if (rows[i][1].toString() === d.matricula.toString()) {
             const rowNumber = i + 1;
-            // Atualiza colunas C a I (Nome até Foto) - 7 colunas
-            sheet.getRange(rowNumber, 3, 1, 7).setValues([[
-              d.nome, d.cargo, d.supervisor, d.admissao, d.nascimento, d.sexo, d.foto
-            ]]);
-            // Atualiza coluna M (13) separadamente - Término
-            sheet.getRange(rowNumber, 13).setValue(d.termino);
+            // C: Nome (3), D: Cargo (4), E: Supervisor (5)
+            // F: Admissão (6), G: Nascimento (7), H: Sexo (8), I: Foto (9)
+            sheet.getRange(rowNumber, 3).setValue(d.nome);
+            sheet.getRange(rowNumber, 4).setValue(d.cargo);
+            sheet.getRange(rowNumber, 5).setValue(d.supervisor);
+            sheet.getRange(rowNumber, 6).setValue(d.admissao);
+            sheet.getRange(rowNumber, 7).setValue(d.nascimento);
+            sheet.getRange(rowNumber, 8).setValue(d.sexo);
+            sheet.getRange(rowNumber, 9).setValue(d.foto);
+            // M: Término (13)
+            if (d.termino) {
+              sheet.getRange(rowNumber, 13).setValue(d.termino);
+            }
             break;
         }
     }
