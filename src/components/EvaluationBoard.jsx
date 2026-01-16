@@ -104,11 +104,11 @@ const ApprenticeListItem = ({ apprentice, onEvaluate, onEdit, onDelete }) => (
                             <Star
                                 key={s}
                                 size={12}
-                                className={`${s <= Math.round(apprentice.lastScore || 0) ? 'fill-orange-400 text-orange-400' : 'text-gray-100'}`}
+                                className={`${s <= Math.round(apprentice.lastScore || 0) && apprentice.lastScore > 0 ? 'fill-orange-400 text-orange-400' : 'text-gray-100'}`}
                             />
                         ))}
                     </div>
-                    {apprentice.lastScore ? (
+                    {apprentice.lastScore && apprentice.lastScore > 0 ? (
                         <span className="text-xs font-black text-gray-800">{apprentice.lastScore}</span>
                     ) : (
                         <span className="text-[10px] font-black text-gray-300">SC</span>
