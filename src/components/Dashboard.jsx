@@ -101,17 +101,24 @@ export default function Dashboard({ apprentices = [] }) {
                         <span className="text-[10px] font-black text-falcao-navy bg-falcao-navy/5 border border-falcao-navy/10 px-3 py-1 rounded-full uppercase tracking-widest">Distribuição</span>
                     </div>
                     {total > 0 ? (
-                        <div className="h-[300px] w-full">
+                        <div className="w-full" style={{ height: Math.max(300, dataByRole.length * 50) + 'px' }}>
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={dataByRole} layout="vertical" margin={{ left: 20 }}>
+                                <BarChart data={dataByRole} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
                                     <XAxis type="number" hide />
-                                    <YAxis dataKey="role" type="category" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 700 }} />
+                                    <YAxis
+                                        dataKey="role"
+                                        type="category"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#9CA3AF', fontSize: 10, fontWeight: 700 }}
+                                        width={150}
+                                    />
                                     <Tooltip
                                         cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                                         contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}
                                     />
-                                    <Bar dataKey="count" radius={[0, 8, 8, 0]} barSize={20}>
+                                    <Bar dataKey="count" radius={[0, 8, 8, 0]} barSize={24}>
                                         {dataByRole.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
