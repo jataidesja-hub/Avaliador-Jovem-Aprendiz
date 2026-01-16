@@ -8,9 +8,24 @@
 
 const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
 const SHEET_NAME = 'Aprendizes';
+const CONFIG_SHEET_NAME = 'Configs';
 
 function doGet(e) {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  
+  if (e.parameter.action === 'getConfigs') {
+    const sheet = ss.getSheetByName(CONFIG_SHEET_NAME);
+    const data = sheet.getDataRange().getValues();
+    data.shift(); // remove headers
+    
+    const sectors = data.filter(r => r[0] === 'Sector').map(r => r[1]);
+    const supervisors = data.filter(r => r[0] === 'Supervisor').map(r => r[1]);
+    
+    return ContentService.createTextOutput(JSON.stringify({ sectors, supervisors }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const sheet = ss.getSheetByName(SHEET_NAME);
   const data = sheet.getDataRange().getValues();
   const headers = data.shift();
   
@@ -28,26 +43,38 @@ function doGet(e) {
 
 function doPost(e) {
   const params = JSON.parse(e.postData.contents);
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
-  const data = sheet.getDataRange().getValues();
-  const headers = data[0];
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  
+  // 5. AÇÃO: SALVAR CONFIGURAÇÕES
+  if (params.action === 'saveConfigs') {
+    const sheet = ss.getSheetByName(CONFIG_SHEET_NAME);
+    sheet.clear();
+    sheet.appendRow(['Type', 'Value']);
+    params.sectors.forEach(s => sheet.appendRow(['Sector', s]));
+    params.supervisors.forEach(s => sheet.appendRow(['Supervisor', s]));
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const sheet = ss.getSheetByName(SHEET_NAME);
   
   // 1. ADICIONAR APRENDIZ
   if (params.action === 'addApprentice') {
     const d = params.data;
     sheet.appendRow([
-      new Date(),
-      d.matricula,
-      d.nome,
-      d.cargo,
-      d.supervisor,
-      d.admissao,
-      d.nascimento,
-      d.sexo,
-      d.foto,
-      'not_evaluated',
-      1, // Ciclo inicial
-      0  // Nota inicial
+      new Date(),       // A: Timestamp (1)
+      d.matricula,      // B: Matrícula (2)
+      d.nome,           // C: Nome (3)
+      d.cargo,          // D: Cargo (4)
+      d.supervisor,     // E: Supervisor (5)
+      d.admissao,       // F: Admissão (6)
+      d.nascimento,     // G: Nascimento (7)
+      d.sexo,           // H: Sexo (8)
+      d.foto,           // I: Foto (9)
+      'not_evaluated',  // J: Status (10)
+      1,                // K: Ciclo (11)
+      0,                // L: Nota (12)
+      d.termino         // M: Término (13)
     ]);
   }
   
@@ -59,9 +86,9 @@ function doPost(e) {
     for (let i = 1; i < rows.length; i++) {
         if (rows[i][1].toString() === d.apprenticeId.toString()) {
             const rowNumber = i + 1;
-            sheet.getRange(rowNumber, 10).setValue('not_evaluated'); // J: Status
-            sheet.getRange(rowNumber, 11).setValue(d.cycleFinished);// K: Ciclo
-            sheet.getRange(rowNumber, 12).setValue(d.score);        // L: Nota
+            sheet.getRange(rowNumber, 10).setValue('not_evaluated'); // J: Status (10)
+            sheet.getRange(rowNumber, 11).setValue(d.cycleFinished);// K: Ciclo (11)
+            sheet.getRange(rowNumber, 12).setValue(d.score);        // L: Nota (12)
             break;
         }
     }
@@ -74,10 +101,12 @@ function doPost(e) {
     for (let i = 1; i < rows.length; i++) {
         if (rows[i][1].toString() === d.matricula.toString()) {
             const rowNumber = i + 1;
-            // Atualiza colunas C a I (Nome até Foto)
+            // Atualiza colunas C a I (Nome até Foto) - 7 colunas
             sheet.getRange(rowNumber, 3, 1, 7).setValues([[
               d.nome, d.cargo, d.supervisor, d.admissao, d.nascimento, d.sexo, d.foto
             ]]);
+            // Atualiza coluna M (13) separadamente - Término
+            sheet.getRange(rowNumber, 13).setValue(d.termino);
             break;
         }
     }
@@ -101,12 +130,23 @@ function doPost(e) {
 
 function setup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Aprendizes Sheet
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow([
       'Timestamp', 'Matrícula', 'Nome', 'Cargo', 'Supervisor', 
-      'Admissão', 'Nascimento', 'Sexo', 'Foto', 'Status', 'Ciclo', 'Nota'
+      'Admissão', 'Nascimento', 'Sexo', 'Foto', 'Status', 'Ciclo', 'Nota', 'Término'
     ]);
+  }
+
+  // Configs Sheet
+  let configSheet = ss.getSheetByName(CONFIG_SHEET_NAME);
+  if (!configSheet) {
+    configSheet = ss.insertSheet(CONFIG_SHEET_NAME);
+    configSheet.appendRow(['Type', 'Value']);
+    configSheet.appendRow(['Sector', 'Administrativo']);
+    configSheet.appendRow(['Supervisor', 'Coordenador Geral']);
   }
 }

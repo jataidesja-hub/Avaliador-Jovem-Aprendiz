@@ -5,7 +5,7 @@ import EvaluationBoard from './components/EvaluationBoard';
 import RegistrationModal from './components/RegistrationModal';
 import EvaluationModal from './components/EvaluationModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchApprentices, saveApprentice, updateApprenticeEvaluation, updateApprentice, deleteApprentice } from './services/api';
+import { fetchApprentices, saveApprentice, updateApprenticeEvaluation, updateApprentice, deleteApprentice, fetchConfigs, saveConfigs } from './services/api';
 import { Plus, Trash2, Building2, UserCheck } from 'lucide-react';
 
 function App() {
@@ -21,17 +21,32 @@ function App() {
   const [sectors, setSectors] = useState(['Administrativo', 'Operacional', 'Manutenção', 'RH', 'Financeiro']);
   const [supervisors, setSupervisors] = useState(['Carlos Silva', 'Ana Oliveira', 'Roberto Santos']);
 
+  const loadData = async () => {
+    try {
+      const [apprenticeData, configData] = await Promise.all([
+        fetchApprentices(),
+        fetchConfigs()
+      ]);
+
+      setApprentices(apprenticeData);
+
+      // Merge backend configs with any unique ones from apprentice data
+      const backendSectors = configData.sectors || [];
+      const backendSupervisors = configData.supervisors || [];
+
+      const dataSectors = [...new Set(apprenticeData.map(a => a.cargo).filter(Boolean))];
+      const dataSupervisors = [...new Set(apprenticeData.map(a => a.supervisor).filter(Boolean))];
+
+      setSectors([...new Set([...backendSectors, ...dataSectors])]);
+      setSupervisors([...new Set([...backendSupervisors, ...dataSupervisors])]);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await fetchApprentices();
-        setApprentices(data);
-      } catch (error) {
-        console.error("Failed to load apprentices:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     loadData();
   }, []);
 
@@ -50,6 +65,8 @@ function App() {
         setApprentices(prev => prev.map(a =>
           a.matricula === newApprentice.matricula ? { ...a, ...newApprentice } : a
         ));
+        // Force refresh from server to confirm persistence
+        setTimeout(loadData, 1000);
       } else {
         await saveApprentice(newApprentice);
         setApprentices((prev) => [...prev, {
@@ -110,15 +127,31 @@ function App() {
   };
 
   // Config Handlers
-  const addSector = (name) => {
-    if (name && !sectors.includes(name)) setSectors([...sectors, name]);
+  const addSector = async (name) => {
+    if (name && !sectors.includes(name)) {
+      const newSectors = [...sectors, name];
+      setSectors(newSectors);
+      await saveConfigs(newSectors, supervisors);
+    }
   };
-  const removeSector = (name) => setSectors(sectors.filter(s => s !== name));
+  const removeSector = async (name) => {
+    const newSectors = sectors.filter(s => s !== name);
+    setSectors(newSectors);
+    await saveConfigs(newSectors, supervisors);
+  };
 
-  const addSupervisor = (name) => {
-    if (name && !supervisors.includes(name)) setSupervisors([...supervisors, name]);
+  const addSupervisor = async (name) => {
+    if (name && !supervisors.includes(name)) {
+      const newSupervisors = [...supervisors, name];
+      setSupervisors(newSupervisors);
+      await saveConfigs(sectors, newSupervisors);
+    }
   };
-  const removeSupervisor = (name) => setSupervisors(supervisors.filter(s => s !== name));
+  const removeSupervisor = async (name) => {
+    const newSupervisors = supervisors.filter(s => s !== name);
+    setSupervisors(newSupervisors);
+    await saveConfigs(sectors, newSupervisors);
+  };
 
   return (
     <div className="flex min-h-screen bg-falcao-soft-bg text-gray-800 font-inter antialiased" lang="pt-BR">

@@ -11,12 +11,13 @@ export const fetchApprentices = async () => {
             cargo: item.Cargo,
             supervisor: item.Supervisor,
             admissao: item.Admissão,
+            termino: item.Término,
             nascimento: item.Nascimento,
             sexo: item.Sexo,
             foto: item.Foto || null,
             column: item.Status || 'not_evaluated',
             cycle: parseInt(item.Ciclo) || 1,
-            lastScore: parseFloat(item.Nota) || 0
+            lastScore: item.Nota ? parseFloat(item.Nota.toString().replace(',', '.')) : 0
         }));
     } catch (error) {
         console.error('Error fetching apprentices:', error);
@@ -81,7 +82,17 @@ export const updateApprentice = async (apprenticeData) => {
     try {
         const payload = {
             action: 'updateApprentice',
-            data: apprenticeData
+            data: {
+                matricula: apprenticeData.matricula,
+                nome: apprenticeData.nome,
+                cargo: apprenticeData.cargo,
+                supervisor: apprenticeData.supervisor,
+                admissao: apprenticeData.admissao,
+                termino: apprenticeData.termino,
+                nascimento: apprenticeData.nascimento,
+                sexo: apprenticeData.genero || apprenticeData.sexo,
+                foto: apprenticeData.foto
+            }
         };
 
         await fetch(APPS_SCRIPT_URL, {
@@ -115,6 +126,39 @@ export const deleteApprentice = async (matricula) => {
         return { success: true };
     } catch (error) {
         console.error('Error deleting apprentice:', error);
+        throw error;
+    }
+};
+
+export const fetchConfigs = async () => {
+    try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=getConfigs`);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching configs:', error);
+        return { sectors: [], supervisors: [] };
+    }
+};
+
+export const saveConfigs = async (sectors, supervisors) => {
+    try {
+        const payload = {
+            action: 'saveConfigs',
+            sectors,
+            supervisors
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving configs:', error);
         throw error;
     }
 };

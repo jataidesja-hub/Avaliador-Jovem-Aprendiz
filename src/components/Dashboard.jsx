@@ -6,10 +6,30 @@ import { motion } from 'framer-motion';
 
 export default function Dashboard({ apprentices = [] }) {
     const total = apprentices.length;
-    const female = apprentices.filter(a => a.genero === 'Feminino').length;
-    const male = apprentices.filter(a => a.genero === 'Masculino').length;
 
-    const evaluatedApprentices = apprentices.filter(a => a.lastScore !== undefined);
+    const calculateAge = (dateString) => {
+        if (!dateString) return null;
+        try {
+            const birthDate = new Date(dateString);
+            if (isNaN(birthDate.getTime())) return null;
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            return age;
+        } catch (e) { return null; }
+    };
+
+    const normalizeGender = (g) => g ? g.toString().trim().toLowerCase() : '';
+    const female = apprentices.filter(a => normalizeGender(a.sexo) === 'feminino').length;
+    const male = apprentices.filter(a => normalizeGender(a.sexo) === 'masculino').length;
+
+    const ages = apprentices.map(a => calculateAge(a.nascimento)).filter(age => age !== null);
+    const averageAge = ages.length > 0
+        ? (ages.reduce((acc, curr) => acc + curr, 0) / ages.length).toFixed(1)
+        : "0";
+
+    const evaluatedApprentices = apprentices.filter(a => a.lastScore > 0);
     const averageScore = evaluatedApprentices.length > 0
         ? (evaluatedApprentices.reduce((acc, curr) => acc + curr.lastScore, 0) / evaluatedApprentices.length).toFixed(1)
         : "0";
@@ -21,12 +41,20 @@ export default function Dashboard({ apprentices = [] }) {
         color: '#001f3f' // Navy
     })).filter(d => d.count > 0);
 
+    // Calculate progress based on cycles
+    const apprenticesInCycle = (cycle) => apprentices.filter(a => (a.cycle || 1) >= cycle).length;
     const periodEvaluations = [
-        { period: 'Ciclo 1', progress: total > 0 ? 10 : 0, status: total > 0 ? 'Em andamento' : 'Pendente' },
-        { period: 'Ciclo 2', progress: 0, status: 'Pendente' },
-        { period: 'Ciclo 3', progress: 0, status: 'Pendente' },
-        { period: 'Ciclo 4', progress: 0, status: 'Pendente' },
+        { period: 'Ciclo 1', progress: total > 0 ? Math.round((apprentices.filter(a => (a.cycle || 1) > 1).length / total) * 100) : 0, status: total > 0 ? 'Monitorando' : 'Pendente' },
+        { period: 'Ciclo 2', progress: total > 0 ? Math.round((apprentices.filter(a => (a.cycle || 1) > 2).length / total) * 100) : 0, status: 'Pendente' },
+        { period: 'Ciclo 3', progress: total > 0 ? Math.round((apprentices.filter(a => (a.cycle || 1) > 3).length / total) * 100) : 0, status: 'Pendente' },
+        { period: 'Ciclo 4', progress: total > 0 ? Math.round((apprentices.filter(a => (a.cycle || 1) >= 4 && a.lastScore > 0).length / total) * 100) : 0, status: 'Pendente' },
     ];
+
+    // Update status labels
+    periodEvaluations.forEach(ev => {
+        if (ev.progress === 100) ev.status = 'Concluído';
+        else if (ev.progress > 0) ev.status = 'Em andamento';
+    });
 
     return (
         <div className="space-y-10 pb-10">
@@ -40,7 +68,7 @@ export default function Dashboard({ apprentices = [] }) {
                 <StatsCard label="Total Jovens" value={total} icon={Users} colorClass="bg-falcao-navy" />
                 <StatsCard label="Feminino" value={female} icon={UserCheck} colorClass="bg-pink-600" />
                 <StatsCard label="Masculino" value={male} icon={UserCheck} colorClass="bg-blue-600" />
-                <StatsCard label="Média Idade" value={total > 0 ? "19.2" : "0"} icon={Calendar} colorClass="bg-orange-600" />
+                <StatsCard label="Média Idade" value={averageAge} icon={Calendar} colorClass="bg-orange-600" />
                 <StatsCard label="Média Geral" value={averageScore} icon={TrendingUp} colorClass="bg-green-600" />
             </div>
 
