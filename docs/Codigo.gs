@@ -350,10 +350,26 @@ function doPost(e) {
             landmarks: visionData.faceAnnotations[0].landmarks,
             type: 'google-vision'
           });
+        } else {
+          // BLOQUEIO: Se enviou imagem mas a IA não viu rosto, não cadastra
+          return ContentService.createTextOutput(JSON.stringify({ 
+            status: 'error', 
+            message: 'A IA não detectou um rosto claro. Verifique a iluminação e olhe para a câmera.' 
+          })).setMimeType(ContentService.MimeType.JSON);
         }
       } catch (e) {
         Logger.log("Erro ao extrair landmarks no registro: " + e.message);
+        return ContentService.createTextOutput(JSON.stringify({ 
+          status: 'error', 
+          message: 'Erro na IA do Google: ' + e.message 
+        })).setMimeType(ContentService.MimeType.JSON);
       }
+    } else if (!d.faceData) {
+        // Se não tem imagem nem faceData prévia, é um erro de payload
+        return ContentService.createTextOutput(JSON.stringify({ 
+            status: 'error', 
+            message: 'Dados faciais ausentes.' 
+        })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // Verifica se já existe cadastro para essa matrícula para atualizar ou inserir

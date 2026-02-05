@@ -241,20 +241,25 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                 throw new Error('Falha ao capturar imagem da câmera.');
             }
 
-            await registerFace({
+            const result = await registerFace({
                 matricula: emp.matricula,
                 nome: emp.nome,
                 image: image
             });
 
-            setScanning(false);
-            setStatus('success');
-            setTimeout(() => {
-                setMode('selection');
-                setStatus('idle');
-                setMatricula('');
-                stopCamera();
-            }, 2000);
+            if (result.status === 'success' || result.status === 'updated') {
+                setScanning(false);
+                setStatus('success');
+                setTimeout(() => {
+                    setMode('selection');
+                    setStatus('idle');
+                    setMatricula('');
+                    stopCamera();
+                }, 2000);
+            } else {
+                setError(result.message || 'Erro ao processar cadastro facial.');
+                setStatus('error');
+            }
         } catch (err) {
             console.error('Erro no cadastro facial:', err);
             setError('Erro ao cadastrar rosto na nuvem. Verifique sua conexão e tente novamente.');
