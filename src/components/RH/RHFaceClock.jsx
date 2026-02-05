@@ -13,6 +13,7 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
     const [error, setError] = useState('');
     const [modelsReady, setModelsReady] = useState(false);
     const [recognizedEmployee, setRecognizedEmployee] = useState(null);
+    const [bestDistance, setBestDistance] = useState(null);
     const [faceEmbeddings, setFaceEmbeddings] = useState([]);
     const videoRef = useRef(null);
     const scanIntervalRef = useRef(null);
@@ -126,6 +127,7 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
 
                 if (result.success && result.employee) {
                     clearInterval(scanIntervalRef.current);
+                    setBestDistance(null);
                     if (result.confidence) {
                         setStatus('success'); // Para mostrar o checkmark
                         // Pequeno delay para o usuário ver o check antes de processar tudo
@@ -134,9 +136,11 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                         await handleSuccessfulRecognition(result.employee);
                     }
                     return;
-                } else if (result.error && !result.error.includes('IA do Google não detectou')) {
-                    // Se a IA detectou mas não reconheceu, podemos dar um feedback sutil
-                    console.log('IA detectou mas não reconheceu:', result.bestDistance);
+                } else if (result.bestDistance) {
+                    // Se a IA detectou mas não reconheceu, mostramos a distância para o usuário
+                    setBestDistance(parseFloat(result.bestDistance));
+                } else {
+                    setBestDistance(null);
                 }
             } catch (err) {
                 console.error('Erro na identificação em nuvem:', err);
@@ -429,11 +433,16 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                                         animate={{ scale: [1, 1.1, 1], opacity: [1, 0.5, 1] }}
                                         transition={{ duration: 1.5, repeat: Infinity }}
                                     />
-                                    <div className="absolute bottom-4 left-0 right-0 text-center">
+                                    <div className="absolute bottom-4 left-0 right-0 text-center flex flex-col items-center">
                                         <span className="bg-black/70 px-4 py-2 rounded-full text-sm">
                                             <Loader2 className="inline mr-2 animate-spin" size={14} />
                                             Identificando rosto...
                                         </span>
+                                        {bestDistance && (
+                                            <span className="text-[10px] text-white/50 mt-1 bg-black/40 px-2 py-0.5 rounded-full">
+                                                Precisão: {((1 - (bestDistance / 0.15)) * 100).toFixed(0)}%
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             )}

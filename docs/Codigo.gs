@@ -497,8 +497,8 @@ function identifyFaceAction(imageBase64) {
       }
     }
 
-    // Threshold ajustado para 0.12 (mais tolerante para envios móveis)
-    const threshold = 0.12; 
+    // Threshold ajustado para 0.15 (mais tolerante para envios móveis)
+    const threshold = 0.15; 
     
     if (bestMatch && minDistance < threshold) {
       const confidence = Math.max(0, (1 - (minDistance / threshold)) * 100).toFixed(0);
