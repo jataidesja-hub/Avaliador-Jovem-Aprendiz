@@ -474,8 +474,8 @@ function identifyFaceAction(imageBase64) {
     const visionData = callGoogleVision(imageBase64);
     
     if (!visionData.faceAnnotations || visionData.faceAnnotations.length === 0) {
-      Logger.log("Identificação: Nenhum rosto detectado na imagem enviada.");
-      return { success: false, error: 'A IA do Google não detectou nenhum rosto na imagem.' };
+      Logger.log("Identificação: Nenhum rosto detectado na imagem enviada (Verifique a iluminação).");
+      return { success: false, faceDetected: false, error: 'A IA do Google não detectou nenhum rosto na imagem. Aproxime-se da luz.' };
     }
 
     const face = visionData.faceAnnotations[0];
@@ -526,11 +526,14 @@ function identifyFaceAction(imageBase64) {
         confidence: confidence + "%"
       };
     } else {
-      Logger.log(`❌ FALHA: Nenhum rosto compatível. Melhor match: ${bestMatch ? bestMatch.nome : 'Nenhum'} (${minDistance.toFixed(4)} > ${threshold})`);
+      const bestName = bestMatch ? bestMatch.nome : 'Nenhum';
+      const dSafe = (minDistance === Infinity) ? "9.999" : minDistance.toFixed(4);
+      Logger.log(`❌ FALHA: Nenhum rosto compatível. Melhor match: ${bestName} (${dSafe} > ${threshold})`);
       return { 
         success: false, 
+        faceDetected: true,
         error: 'Rosto não reconhecido. Certifique-se de estar cadastrado e com boa iluminação.',
-        bestDistance: minDistance.toFixed(4)
+        bestDistance: dSafe
       };
     }
   } catch (err) {
@@ -596,7 +599,10 @@ function calculateFaceDistance(l1, l2) {
   const n1 = normalizePoints(l1);
   const n2 = normalizePoints(l2);
 
-  if (!n1 || !n2) return Infinity;
+  if (!n1 || !n2) {
+    if (!n1) Logger.log("Aviso: Falha ao normalizar rosto enviado (pontos dos olhos ausentes).");
+    return Infinity;
+  }
 
   let totalDist = 0;
   let count = 0;

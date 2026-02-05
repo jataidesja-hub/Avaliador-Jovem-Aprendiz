@@ -136,11 +136,16 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                         await handleSuccessfulRecognition(result.employee);
                     }
                     return;
+                } else if (!result.faceDetected) {
+                    setBestDistance(null);
+                    setError(result.error || 'Nenhum rosto detectado. Aproxime-se da luz.');
                 } else if (result.bestDistance) {
                     // Se a IA detectou mas não reconheceu, mostramos a distância para o usuário
                     setBestDistance(parseFloat(result.bestDistance));
+                    setError(''); // Limpa erro se detectou algo
                 } else {
                     setBestDistance(null);
+                    setError('');
                 }
             } catch (err) {
                 console.error('Erro na identificação em nuvem:', err);
@@ -445,7 +450,12 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                                         </span>
                                         {bestDistance && (
                                             <span className="text-[10px] text-white/50 mt-1 bg-black/40 px-2 py-0.5 rounded-full">
-                                                Precisão: {((1 - (bestDistance / 0.15)) * 100).toFixed(0)}%
+                                                Precisão: {bestDistance > 9 ? '0%' : (Math.max(0, (1 - (bestDistance / 0.15)) * 100)).toFixed(0) + '%'}
+                                            </span>
+                                        )}
+                                        {error && error.includes('luz') && (
+                                            <span className="text-[10px] text-yellow-400 mt-1 bg-black/40 px-2 py-0.5 rounded-full animate-pulse">
+                                                ⚠️ {error}
                                             </span>
                                         )}
                                     </div>
