@@ -99,6 +99,18 @@ function App() {
     }
   };
 
+  // Suporte a "App à Parte" (Modo Totem) via URL: index.html#/ponto
+  useEffect(() => {
+    const handleHash = () => {
+      if (window.location.hash === '#/ponto') {
+        setCurrentModule('ponto-badge');
+      }
+    };
+    handleHash(); // Check on mount
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
   const handleAddApprentice = async (newApprentice, isEdit = false) => {
     try {
       if (isEdit) {

@@ -324,13 +324,32 @@ function doPost(e) {
     }
     const d = params.data;
     const now = new Date();
+    const todayStr = Utilities.formatDate(now, 'America/Sao_Paulo', 'dd/MM/yyyy');
+    
+    // Lógica de Entrada/Saída automática
+    const data = sheet.getDataRange().getValues();
+    let lastType = 'Saida'; // Default para o primeiro do dia ser Entrada
+    
+    for (let i = data.length - 1; i >= 1; i--) {
+      const row = data[i];
+      const rowMatricula = row[1].toString();
+      const rowData = row[4].toString();
+      
+      if (rowMatricula === d.matricula.toString() && rowData === todayStr) {
+        lastType = row[6]; // Pega o último tipo registrado hoje
+        break;
+      }
+    }
+    
+    const tipoFinal = lastType === 'Entrada' ? 'Saida' : 'Entrada';
+
     sheet.appendRow([
       now, d.matricula, d.nome, d.setor,
-      Utilities.formatDate(now, 'America/Sao_Paulo', 'dd/MM/yyyy'),
+      todayStr,
       Utilities.formatDate(now, 'America/Sao_Paulo', 'HH:mm'),
-      d.tipo || 'Entrada'
+      tipoFinal
     ]);
-    return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success', tipo: tipoFinal }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 

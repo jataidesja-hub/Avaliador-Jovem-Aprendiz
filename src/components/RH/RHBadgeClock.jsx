@@ -124,24 +124,59 @@ export default function RHBadgeClock({ onClockIn, employees = [], onBack }) {
         handleSuccessfulRecognition(emp);
     };
 
+    const playBeep = () => {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.2);
+        } catch (e) {
+            console.warn('Falha ao tocar bipe:', e);
+        }
+    };
+
     const handleSuccessfulRecognition = async (emp) => {
         setStatus('success');
         setRecognizedEmployee(emp);
+        playBeep();
 
         try {
-            await registerClockIn({
+            const result = await registerClockIn({
                 matricula: emp.matricula,
                 nome: emp.nome,
                 setor: emp.setor || 'N/A'
             });
 
-            if (onClockIn) onClockIn(emp);
+            // Adicionamos o tipo retornado pelo backend ao objeto do colaborador para mostrar na tela
+            const updatedEmp = { ...emp, lastType: result.tipo };
+            setRecognizedEmployee(updatedEmp);
 
+            if (onClockIn) onClockIn(updatedEmp);
+
+            // FLUXO CONTÍNUO: Aguarda 3 segundos e reseta para o próximo
             setTimeout(() => {
-                setMode('selection');
-                setStatus('idle');
-                setRecognizedEmployee(null);
-                setMatricula('');
+                if (mode === 'clock-in') {
+                    // Mantém no modo de leitura NFC para o próximo
+                    setStatus('scanning');
+                    setRecognizedEmployee(null);
+                    setMatricula('');
+                    setError('');
+                } else {
+                    setMode('selection');
+                    setStatus('idle');
+                    setRecognizedEmployee(null);
+                    setMatricula('');
+                    setError('');
+                }
             }, 3000);
         } catch (err) {
             setError('Erro ao registrar ponto na planilha.');
@@ -164,23 +199,25 @@ export default function RHBadgeClock({ onClockIn, employees = [], onBack }) {
             >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
-                    <button
-                        onClick={() => {
-                            stopNfcScan();
-                            if (mode === 'selection') onBack();
-                            else setMode('selection');
-                            setError('');
-                            setStatus('idle');
-                        }}
-                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                    >
-                        <ArrowLeft size={24} />
-                    </button>
-                    <div className="text-center">
+                    {window.location.hash !== '#/ponto' && (
+                        <button
+                            onClick={() => {
+                                stopNfcScan();
+                                if (mode === 'selection') onBack();
+                                else setMode('selection');
+                                setError('');
+                                setStatus('idle');
+                            }}
+                            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                        >
+                            <ArrowLeft size={24} />
+                        </button>
+                    )}
+                    <div className="text-center flex-1">
                         <h1 className="text-2xl font-bold tracking-tight">REGISTRADOR PONTO</h1>
                         <p className="text-white/60 text-sm">Crachá NFC ou Matrícula</p>
                     </div>
-                    <div className="w-10" />
+                    {window.location.hash !== '#/ponto' && <div className="w-10" />}
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -271,11 +308,17 @@ export default function RHBadgeClock({ onClockIn, employees = [], onBack }) {
                                     <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6 border-2 border-green-500/50">
                                         <CheckCircle2 size={48} className="text-green-500" />
                                     </div>
-                                    <h2 className="text-3xl font-bold text-green-500 mb-2">SUCESSO!</h2>
-                                    <p className="text-xl text-white/80">
-                                        {recognizedEmployee ? `Olá, ${recognizedEmployee.nome.split(' ')[0]}` : 'Crachá Vinculado!'}
+                                    <h2 className="text-3xl font-bold text-green-500 mb-2 uppercase">Registrado!</h2>
+                                    <p className="text-2xl font-bold text-white mb-1">
+                                        {recognizedEmployee ? recognizedEmployee.nome.split(' ')[0] : ''}
                                     </p>
-                                    {recognizedEmployee && <p className="text-white/40 mt-2">Ponto registrado com sucesso.</p>}
+                                    {recognizedEmployee?.lastType && (
+                                        <div className={`mt-2 px-6 py-2 rounded-full font-black text-xl tracking-widest ${recognizedEmployee.lastType === 'Entrada' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                                            }`}>
+                                            {recognizedEmployee.lastType.toUpperCase()}
+                                        </div>
+                                    )}
+                                    <p className="text-white/40 mt-4 animate-pulse">Aguardando próximo...</p>
                                 </div>
                             ) : status === 'error' ? (
                                 <div className="py-12 flex flex-col items-center">
