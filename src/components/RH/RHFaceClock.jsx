@@ -105,7 +105,7 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1); // Espelhar de volta para salvar normal
         ctx.drawImage(videoRef.current, 0, 0);
-        return canvas.toDataURL('image/jpeg', 0.8);
+        return canvas.toDataURL('image/jpeg', 0.5); // Qualidade reduzida para upload mais rápido
     };
 
     const startContinuousDetection = () => {
@@ -243,9 +243,11 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                 stopCamera();
             }, 2000);
         } catch (err) {
-            setScanning(false);
-            setError('Erro ao cadastrar rosto na nuvem. Tente novamente.');
+            console.error('Erro no cadastro facial:', err);
+            setError('Erro ao cadastrar rosto na nuvem. Verifique sua conexão e tente novamente.');
             setStatus('error');
+        } finally {
+            setScanning(false);
         }
     };
 

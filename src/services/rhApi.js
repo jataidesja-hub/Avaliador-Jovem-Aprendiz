@@ -39,14 +39,13 @@ export const saveEmployee = async (employee) => {
             }
         };
 
-        await fetch(APPS_SCRIPT_URL, {
+        const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
 
-        return { success: true };
+        return await response.json();
     } catch (error) {
         console.error('Error saving employee:', error);
         throw error;
@@ -60,14 +59,13 @@ export const deleteEmployee = async (matricula) => {
             matricula: matricula
         };
 
-        await fetch(APPS_SCRIPT_URL, {
+        const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
 
-        return { success: true };
+        return await response.json();
     } catch (error) {
         console.error('Error deleting employee:', error);
         throw error;
@@ -98,14 +96,13 @@ export const saveRHConfigs = async (configs) => {
             additionTypes: configs.additionTypes
         };
 
-        await fetch(APPS_SCRIPT_URL, {
+        const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
 
-        return { success: true };
+        return await response.json();
     } catch (error) {
         console.error('Error saving RH configs:', error);
         throw error;
@@ -126,14 +123,13 @@ export const registerClockIn = async (clockData) => {
             }
         };
 
-        await fetch(APPS_SCRIPT_URL, {
+        const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
 
-        return { success: true };
+        return await response.json();
     } catch (error) {
         console.error('Error registering clock in:', error);
         throw error;
@@ -154,14 +150,13 @@ export const registerFace = async (faceData) => {
             }
         };
 
-        await fetch(APPS_SCRIPT_URL, {
+        const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
 
-        return { success: true };
+        return await response.json();
     } catch (error) {
         console.error('Error registering face:', error);
         throw error;
