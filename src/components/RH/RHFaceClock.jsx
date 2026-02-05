@@ -3,7 +3,7 @@ import { Camera, Scan, UserCheck, ArrowLeft, RefreshCw, Hash, AlertCircle } from
 import { motion, AnimatePresence } from 'framer-motion';
 import { registerClockIn, registerFace } from '../../services/rhApi';
 
-export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
+export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs = [], onBack }) {
     const [mode, setMode] = useState('selection'); // selection, register, clock-in
     const [cameraActive, setCameraActive] = useState(false);
     const [scanning, setScanning] = useState(false);
@@ -87,12 +87,26 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
             setScanning(false);
             const emp = employees[0] || { nome: 'Colaborador Teste', matricula: '0000', setor: 'Geral' };
             const now = new Date();
+            const today = now.toLocaleDateString('pt-BR');
+
+            // Determinar se é Entrada ou Saída baseado no último registro do dia
+            const todayLogs = attendanceLogs.filter(log => {
+                const logMatricula = String(log.matricula).trim();
+                const empMatricula = String(emp.matricula).trim();
+                const logDate = log.data;
+                return logMatricula === empMatricula && logDate === today;
+            });
+
+            // Se número de registros do dia for par, próximo é Entrada; se ímpar, é Saída
+            const nextType = todayLogs.length % 2 === 0 ? 'Entrada' : 'Saída';
+
             const log = {
                 nome: emp.nome,
                 matricula: emp.matricula,
-                data: now.toLocaleDateString('pt-BR'),
+                data: today,
                 hora: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                setor: emp.setor
+                setor: emp.setor,
+                tipo: nextType
             };
 
             try {
@@ -101,7 +115,7 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
                     matricula: emp.matricula,
                     nome: emp.nome,
                     setor: emp.setor,
-                    tipo: 'Entrada'
+                    tipo: nextType
                 });
             } catch (err) {
                 console.error('Erro ao salvar ponto:', err);

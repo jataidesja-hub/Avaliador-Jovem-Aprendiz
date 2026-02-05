@@ -225,6 +225,7 @@ function App() {
       <RHFaceClock
         onClockIn={(log) => setAttendanceLogs(prev => [log, ...prev])}
         employees={employees}
+        attendanceLogs={attendanceLogs}
         onBack={() => setCurrentModule(null)}
       />
     );
