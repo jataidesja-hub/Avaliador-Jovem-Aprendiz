@@ -150,6 +150,32 @@ export const identifyFaceOnCloud = async (imageBase64) => {
     }
 };
 
+export const registerBadge = async (matricula, nome, badgeUID) => {
+    try {
+        const payload = {
+            action: 'registerBadge',
+            data: { matricula, nome, badgeUID }
+        };
+        return await gasPost(payload);
+    } catch (error) {
+        console.error('Error registering badge:', error);
+        throw error;
+    }
+};
+
+export const identifyBadge = async (badgeUID) => {
+    try {
+        const payload = {
+            action: 'identifyBadge',
+            data: { badgeUID }
+        };
+        return await gasPost(payload);
+    } catch (error) {
+        console.error('Error identifying badge:', error);
+        return { success: false, error: 'Erro de conexão com o servidor.' };
+    }
+};
+
 export const fetchAttendanceLogs = async () => {
     try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=getAttendanceLogs`);

@@ -15,6 +15,7 @@ const RH_SHEET_NAME = 'Colaboradores';
 const RH_CONFIG_SHEET_NAME = 'RH_Configs';
 const PONTO_SHEET_NAME = 'RegistrosPonto';
 const FACE_SHEET_NAME = 'CadastroFacial';
+const BADGE_SHEET_NAME = 'CadastroBadges';
 
 // CHAVE DA GOOGLE CLOUD VISION API
 const GOOGLE_VISION_API_KEY = 'AIzaSyB8-VzL3OfdaG0t7wPr3sGOq5TnQ-ztKPE'.trim(); 
@@ -400,6 +401,50 @@ function doPost(e) {
     return ContentService.createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
   }
+
+  // ==================== BADGE NFC ====================
+
+  if (action === 'registerBadge') {
+    let sheet = ss.getSheetByName(BADGE_SHEET_NAME);
+    if (!sheet) {
+      sheet = ss.insertSheet(BADGE_SHEET_NAME);
+      sheet.appendRow(['Timestamp', 'Matricula', 'Nome', 'BadgeUID']);
+    }
+    const d = params.data;
+    const rows = sheet.getDataRange().getValues();
+    let found = false;
+    for (let i = 1; i < rows.length; i++) {
+        if (rows[i][1].toString() === d.matricula.toString()) {
+            sheet.getRange(i + 1, 4).setValue(d.badgeUID);
+            sheet.getRange(i + 1, 1).setValue(new Date());
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        sheet.appendRow([new Date(), d.matricula, d.nome, d.badgeUID]);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (action === 'identifyBadge') {
+    const sheet = ss.getSheetByName(BADGE_SHEET_NAME);
+    if (!sheet) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Tabela de badges não encontrada' })).setMimeType(ContentService.MimeType.JSON);
+    
+    const badgeUID = params.data.badgeUID;
+    const rows = sheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+        if (rows[i][3].toString() === badgeUID.toString()) {
+            return ContentService.createTextOutput(JSON.stringify({ 
+                success: true, 
+                employee: { matricula: rows[i][1], nome: rows[i][2] } 
+            })).setMimeType(ContentService.MimeType.JSON);
+        }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Crachá não reconhecido' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   
   return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
     .setMimeType(ContentService.MimeType.JSON);
@@ -461,6 +506,13 @@ function setup() {
   if (!faceSheet) {
     faceSheet = ss.insertSheet(FACE_SHEET_NAME);
     faceSheet.appendRow(['Timestamp', 'Matricula', 'Nome', 'FaceData']);
+  }
+
+  // Cadastro de Badges NFC
+  let badgeSheet = ss.getSheetByName(BADGE_SHEET_NAME);
+  if (!badgeSheet) {
+    badgeSheet = ss.insertSheet(BADGE_SHEET_NAME);
+    badgeSheet.appendRow(['Timestamp', 'Matricula', 'Nome', 'BadgeUID']);
   }
 
   Logger.log('Setup completo! Todas as abas foram criadas.');

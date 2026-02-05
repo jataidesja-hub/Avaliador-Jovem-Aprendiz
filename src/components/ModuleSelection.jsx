@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ClipboardList, LayoutGrid, Users, Shield, ScanFace } from 'lucide-react';
+import { ClipboardList, LayoutGrid, Users, Shield, CreditCard } from 'lucide-react';
 
 const modules = [
   {
@@ -20,11 +20,11 @@ const modules = [
     active: true
   },
   {
-    id: 'ponto-facial',
-    title: 'Ponto Facial',
-    description: 'Registro de entrada e saída via biometria facial.',
-    icon: ScanFace,
-    color: 'bg-orange-600',
+    id: 'ponto-badge',
+    title: 'Ponto Digital (NFC)',
+    description: 'Registro de entrada e saída por crachá ou matrícula manual.',
+    icon: CreditCard,
+    color: 'bg-falcao-gold',
     active: true
   }
 ];

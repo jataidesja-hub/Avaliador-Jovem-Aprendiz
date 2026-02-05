@@ -10,7 +10,7 @@ import RHCollaborators from './components/RH/RHCollaborators';
 import RHEmployeeModal from './components/RH/RHEmployeeModal';
 import RHSettings from './components/RH/RHSettings';
 import RHAttendanceLogs from './components/RH/RHAttendanceLogs';
-import RHFaceClock from './components/RH/RHFaceClock';
+import RHBadgeClock from './components/RH/RHBadgeClock';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchApprentices, saveApprentice, updateApprenticeEvaluation, updateApprentice, deleteApprentice, fetchConfigs, saveConfigs } from './services/api';
 import { fetchEmployees, saveEmployee, deleteEmployee, fetchRHConfigs, saveRHConfigs, fetchAttendanceLogs, fetchFaceRegistrations } from './services/rhApi';
@@ -220,12 +220,11 @@ function App() {
     return <ModuleSelection onSelectModule={setCurrentModule} />;
   }
 
-  if (currentModule === 'ponto-facial') {
+  if (currentModule === 'ponto-badge' || currentModule === 'ponto-facial') {
     return (
-      <RHFaceClock
+      <RHBadgeClock
         onClockIn={(log) => setAttendanceLogs(prev => [log, ...prev])}
         employees={employees}
-        attendanceLogs={attendanceLogs}
         onBack={() => setCurrentModule(null)}
       />
     );
