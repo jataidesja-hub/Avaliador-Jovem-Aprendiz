@@ -15,8 +15,8 @@ const RH_CONFIG_SHEET_NAME = 'RH_Configs';
 const PONTO_SHEET_NAME = 'RegistrosPonto';
 const FACE_SHEET_NAME = 'CadastroFacial';
 
-// CHAVE DA GOOGLE CLOUD VISION API (Opcional - Necessária para detecção em nuvem)
-const GOOGLE_VISION_API_KEY = ''; 
+// CHAVE DA GOOGLE CLOUD VISION API
+const GOOGLE_VISION_API_KEY = 'AIzaSyB8-VzL3OfdaG0t7wPr3sGOq5TnQ-ztKPE'; 
 
 function doGet(e) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -351,8 +351,30 @@ function doPost(e) {
       }
     }
     // Novo cadastro
+    // Se d.image estiver presente, usar Google Vision para extrair landmarks
+    if (d.image) {
+      try {
+        const visionData = callGoogleVision(d.image);
+        if (visionData.faceAnnotations && visionData.faceAnnotations.length > 0) {
+          d.faceData = JSON.stringify({
+            landmarks: visionData.faceAnnotations[0].landmarks,
+            type: 'google-vision'
+          });
+        }
+      } catch (e) {
+        // Fallback para o que veio no faceData ou erro
+      }
+    }
+
     sheet.appendRow([new Date(), d.matricula, d.nome, d.faceData || 'REGISTERED']);
     return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Identificação Facial via Nuvem
+  if (action === 'identifyFace') {
+    const result = identifyFaceAction(params.data.image);
+    return ContentService.createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
   }
   
@@ -419,4 +441,102 @@ function setup() {
   }
 
   Logger.log('Setup completo! Todas as abas foram criadas.');
+}
+
+/**
+ * Action para identificar face via Google Vision
+ */
+function identifyFaceAction(imageBase64) {
+  const visionData = callGoogleVision(imageBase64);
+  
+  if (!visionData.faceAnnotations || visionData.faceAnnotations.length === 0) {
+    return { success: false, error: 'Nenhum rosto detectado pela IA do Google.' };
+  }
+
+  const face = visionData.faceAnnotations[0];
+  const landmarks = face.landmarks;
+  
+  // Buscar todos os cadastros
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(FACE_SHEET_NAME);
+  const data = sheet.getDataRange().getValues();
+  data.shift(); // remove headers
+  
+  let bestMatch = null;
+  let minDistance = Infinity;
+  
+  for (const row of data) {
+    const matricula = row[1];
+    const nome = row[2];
+    const storedFaceData = row[3];
+    
+    try {
+      const stored = JSON.parse(storedFaceData);
+      // Se for um cadastro da Vision API (tem landmarks)
+      if (stored.landmarks) {
+        const distance = calculateFaceDistance(landmarks, stored.landmarks);
+        if (distance < minDistance) {
+          minDistance = distance;
+          bestMatch = { matricula, nome };
+        }
+      }
+    } catch (e) {
+      // Ignora cadastros antigos (face-api.js) ou inválidos
+    }
+  }
+
+  // Threshold para landmarks (ajustável)
+  const threshold = 0.05; 
+  
+  if (bestMatch && minDistance < threshold) {
+    return { success: true, employee: bestMatch, distance: minDistance };
+  } else {
+    return { success: false, error: 'Rosto não reconhecido no banco de dados do Google.' };
+  }
+}
+
+/**
+ * Calcula a distância entre dois conjuntos de landmarks faciais
+ */
+function calculateFaceDistance(l1, l2) {
+  // Simplificado: Compara posições relativas dos olhos e boca
+  // Em uma implementação real, usaríamos normalização por distância inter-ocular
+  let totalDist = 0;
+  const points = ['LEFT_EYE', 'RIGHT_EYE', 'NOSE_TIP', 'MOUTH_CENTER'];
+  
+  const getPoint = (list, type) => list.find(p => p.type === type).position;
+  
+  try {
+    points.forEach(p => {
+      const p1 = getPoint(l1, p);
+      const p2 = getPoint(l2, p);
+      totalDist += Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    });
+    return totalDist / 1000; // Normalização arbitrária para o threshold
+  } catch (e) {
+    return Infinity;
+  }
+}
+
+/**
+ * Chama a Google Cloud Vision API
+ */
+function callGoogleVision(imageBase64) {
+  const url = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`;
+  const content = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+
+  const payload = {
+    requests: [{
+      image: { content: content },
+      features: [{ type: 'FACE_DETECTION', maxResults: 1 }]
+    }]
+  };
+
+  const response = UrlFetchApp.fetch(url, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload)
+  });
+
+  return JSON.parse(response.getContentText()).responses[0];
 }

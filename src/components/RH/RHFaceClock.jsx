@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Scan, UserCheck, ArrowLeft, RefreshCw, Hash, AlertCircle, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { registerClockIn, registerFace, fetchFaceEmbeddings } from '../../services/rhApi';
+import { registerClockIn, registerFace, fetchFaceEmbeddings, identifyFaceOnCloud } from '../../services/rhApi';
 import { loadFaceModels, detectFaceFromVideo, findMatchingFace, descriptorToArray, areModelsLoaded } from '../../services/faceRecognition';
 
 export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs = [], onBack }) {
@@ -96,42 +96,48 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
         };
     }, [mode, cameraActive, modelsReady, status]);
 
+    const captureFrame = () => {
+        if (!videoRef.current) return null;
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1); // Espelhar de volta para salvar normal
+        ctx.drawImage(videoRef.current, 0, 0);
+        return canvas.toDataURL('image/jpeg', 0.8);
+    };
+
     const startContinuousDetection = () => {
-        if (!videoRef.current || !modelsReady) return;
+        if (!videoRef.current) return;
 
         setScanning(true);
         setStatus('scanning');
 
-        let attempts = 0;
-        const maxAttempts = 30; // 15 segundos max
-
-        scanIntervalRef.current = setInterval(async () => {
-            attempts++;
-
-            if (attempts >= maxAttempts) {
-                clearInterval(scanIntervalRef.current);
-                setScanning(false);
-                setStatus('not-recognized');
-                setError('Nenhum rosto reconhecido. Certifique-se de que seu rosto está cadastrado.');
-                return;
-            }
+        // Identificação via Nuvem (Google Vision)
+        const cloudIdentify = async () => {
+            if (mode !== 'clock-in') return;
 
             try {
-                const descriptor = await detectFaceFromVideo(videoRef.current);
+                const image = captureFrame();
+                if (!image) return;
 
-                if (descriptor) {
-                    // Threshold levemente ajustado para 0.65 para ser mais tolerante em diferentes condições de luz
-                    const result = findMatchingFace(descriptor, faceEmbeddings, 0.65);
+                const result = await identifyFaceOnCloud(image);
 
-                    if (result.matched && result.employee) {
-                        clearInterval(scanIntervalRef.current);
-                        await handleSuccessfulRecognition(result.employee);
-                    }
+                if (result.success && result.employee) {
+                    clearInterval(scanIntervalRef.current);
+                    await handleSuccessfulRecognition(result.employee);
+                    return;
                 }
             } catch (err) {
-                console.error('Erro na detecção:', err);
+                console.error('Erro na identificação em nuvem:', err);
             }
-        }, 500);
+        };
+
+        // Enviar para nuvem a cada 2 segundos (para não estourar a API)
+        scanIntervalRef.current = setInterval(cloudIdentify, 2000);
+        // Primeira tentativa imediata
+        cloudIdentify();
     };
 
     const handleSuccessfulRecognition = async (matchedEmployee) => {
@@ -196,10 +202,6 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
             setError('Aguarde a câmera inicializar.');
             return;
         }
-        if (!modelsReady) {
-            setError('Aguarde o carregamento dos modelos de IA.');
-            return;
-        }
 
         const emp = employees.find(e => String(e.matricula).trim() === String(matricula).trim());
         if (!emp) {
@@ -212,30 +214,16 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
         setError('');
 
         try {
-            // Detectar rosto e extrair embedding
-            const descriptor = await detectFaceFromVideo(videoRef.current);
-
-            if (!descriptor) {
-                setScanning(false);
-                setStatus('error');
-                setError('Nenhum rosto detectado. Posicione seu rosto na câmera.');
-                return;
+            const image = captureFrame();
+            if (!image) {
+                throw new Error('Falha ao capturar imagem da câmera.');
             }
-
-            // Converter para array e salvar
-            const embeddingArray = descriptorToArray(descriptor);
 
             await registerFace({
                 matricula: emp.matricula,
                 nome: emp.nome,
-                embedding: embeddingArray
+                image: image
             });
-
-            // Atualizar lista local de embeddings
-            setFaceEmbeddings(prev => [
-                ...prev.filter(f => f.matricula !== String(emp.matricula)),
-                { matricula: String(emp.matricula), nome: emp.nome, embedding: embeddingArray }
-            ]);
 
             setScanning(false);
             setStatus('success');
@@ -247,7 +235,7 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
             }, 2000);
         } catch (err) {
             setScanning(false);
-            setError('Erro ao cadastrar rosto. Tente novamente.');
+            setError('Erro ao cadastrar rosto na nuvem. Tente novamente.');
             setStatus('error');
         }
     };

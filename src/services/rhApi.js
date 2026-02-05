@@ -140,6 +140,7 @@ export const registerClockIn = async (clockData) => {
     }
 };
 
+// Registro facial (pode aceitar embedding ou imagem para processamento em nuvem)
 export const registerFace = async (faceData) => {
     try {
         const payload = {
@@ -147,8 +148,9 @@ export const registerFace = async (faceData) => {
             data: {
                 matricula: faceData.matricula,
                 nome: faceData.nome,
-                // Agora aceita embedding como array de 128 floats ou string 'REGISTERED'
-                faceData: faceData.embedding ? JSON.stringify(faceData.embedding) : 'REGISTERED'
+                // Pode enviar embedding (local) ou image (nuvem)
+                faceData: faceData.embedding ? JSON.stringify(faceData.embedding) : null,
+                image: faceData.image || null
             }
         };
 
@@ -163,6 +165,24 @@ export const registerFace = async (faceData) => {
     } catch (error) {
         console.error('Error registering face:', error);
         throw error;
+    }
+};
+
+// Nova função para identificar face na nuvem (Google Vision)
+export const identifyFaceOnCloud = async (imageBase64) => {
+    try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'identifyFace',
+                data: { image: imageBase64 }
+            }),
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Error identifying face on cloud:', error);
+        return { success: false, error: 'Erro de conexão com o servidor.' };
     }
 };
 
