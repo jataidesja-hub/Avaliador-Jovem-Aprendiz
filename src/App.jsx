@@ -13,7 +13,7 @@ import RHAttendanceLogs from './components/RH/RHAttendanceLogs';
 import RHFaceClock from './components/RH/RHFaceClock';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchApprentices, saveApprentice, updateApprenticeEvaluation, updateApprentice, deleteApprentice, fetchConfigs, saveConfigs } from './services/api';
-import { fetchEmployees, saveEmployee, deleteEmployee, fetchRHConfigs, saveRHConfigs, fetchAttendanceLogs } from './services/rhApi';
+import { fetchEmployees, saveEmployee, deleteEmployee, fetchRHConfigs, saveRHConfigs, fetchAttendanceLogs, fetchFaceRegistrations } from './services/rhApi';
 import { Plus, Trash2, Building2, UserCheck, ArrowLeft } from 'lucide-react';
 
 function App() {
@@ -34,6 +34,8 @@ function App() {
     sectors: [], companies: [], additionTypes: []
   });
   const [attendanceLogs, setAttendanceLogs] = useState([]);
+  const [faceRegistrations, setFaceRegistrations] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Dynamic Config State
   const [sectors, setSectors] = useState(['Administrativo', 'Operacional', 'Manutenção', 'RH', 'Financeiro']);
@@ -54,6 +56,14 @@ function App() {
       setRhConfigs(rhConfigData);
       setAttendanceLogs(logsData);
 
+      // Carregar cadastros faciais
+      try {
+        const faceData = await fetchFaceRegistrations();
+        setFaceRegistrations(faceData);
+      } catch (e) {
+        console.error('Error loading face registrations:', e);
+      }
+
       // Merge backend configs with any unique ones from apprentice data
       const backendSectors = configData.sectors || [];
       const backendSupervisors = configData.supervisors || [];
@@ -73,6 +83,12 @@ function App() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadData();
+    setIsRefreshing(false);
+  };
 
   const handleTabChange = (tab) => {
     if (tab === 'register') {
@@ -287,8 +303,11 @@ function App() {
                 >
                   <RHCollaborators
                     employees={employees}
+                    faceRegistrations={faceRegistrations}
                     onEdit={(emp) => { setEditingEmployee(emp); setIsEmployeeModalOpen(true); }}
                     onDelete={handleDeleteEmployee}
+                    onRefresh={handleRefresh}
+                    isRefreshing={isRefreshing}
                   />
                 </motion.div>
               )}
@@ -300,7 +319,11 @@ function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                 >
-                  <RHAttendanceLogs logs={attendanceLogs} />
+                  <RHAttendanceLogs
+                    logs={attendanceLogs}
+                    onRefresh={handleRefresh}
+                    isRefreshing={isRefreshing}
+                  />
                 </motion.div>
               )}
 

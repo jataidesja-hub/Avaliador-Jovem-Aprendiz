@@ -95,6 +95,25 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  // Cadastros Faciais
+  if (action === 'getFaceRegistrations') {
+    const sheet = ss.getSheetByName(FACE_SHEET_NAME);
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify([]))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const data = sheet.getDataRange().getValues();
+    data.shift(); // remove headers
+    
+    const json = data.map(row => ({
+      matricula: row[1],
+      nome: row[2]
+    }));
+    
+    return ContentService.createTextOutput(JSON.stringify(json))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   // Lista de Aprendizes (padrão)
   const sheet = ss.getSheetByName(SHEET_NAME);
   const data = sheet.getDataRange().getValues();

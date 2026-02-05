@@ -182,3 +182,14 @@ export const fetchAttendanceLogs = async () => {
         return [];
     }
 };
+
+export const fetchFaceRegistrations = async () => {
+    try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=getFaceRegistrations`);
+        const data = await response.json();
+        return data.map(item => String(item.matricula));
+    } catch (error) {
+        console.error('Error fetching face registrations:', error);
+        return [];
+    }
+};
