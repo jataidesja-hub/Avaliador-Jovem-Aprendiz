@@ -17,7 +17,7 @@ const PONTO_SHEET_NAME = 'RegistrosPonto';
 const FACE_SHEET_NAME = 'CadastroFacial';
 
 // CHAVE DA GOOGLE CLOUD VISION API
-const GOOGLE_VISION_API_KEY = 'AIzaSyB8-VzL3OfdaG0t7wPr3sGOq5TnQ-ztKPE'; 
+const GOOGLE_VISION_API_KEY = 'AIzaSyB8-VzL3OfdaG0t7wPr3sGOq5TnQ-ztKPE'.trim(); 
 
 function doGet(e) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -621,29 +621,51 @@ function calculateFaceDistance(l1, l2) {
  * Chama a Google Cloud Vision API
  */
 function callGoogleVision(imageBase64) {
-  const url = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`;
-  const content = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+  if (!imageBase64) throw new Error("Imagem não fornecida.");
 
+  const url = `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`;
+  
+  // Limpeza precisa do Base64
+  let content = imageBase64;
+  if (content.indexOf(',') > -1) {
+    content = content.split(',')[1];
+  }
+  content = content.replace(/\s/g, ''); // Remove qualquer espaço ou quebra de linha
+
+  if (!content || content.length < 100) {
+    throw new Error("O conteúdo da imagem está vazio ou é inválido (tamanho: " + (content ? content.length : 0) + ")");
+  }
+
+  // Payload simplificado conforme documentação oficial v1
   const payload = {
-    requests: [{
-      image: { content: content },
-      features: [{ type: 'FACE_DETECTION', maxResults: 1 }]
-    }]
+    "requests": [
+      {
+        "image": {
+          "content": content
+        },
+        "features": [
+          {
+            "type": "FACE_DETECTION"
+          }
+        ]
+      }
+    ]
   };
 
-  const response = UrlFetchApp.fetch(url, {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true
-  });
+  const options = {
+    "method": "post",
+    "contentType": "application/json",
+    "payload": JSON.stringify(payload),
+    "muteHttpExceptions": true
+  };
 
+  const response = UrlFetchApp.fetch(url, options);
   const responseText = response.getContentText();
   const json = JSON.parse(responseText);
   
   if (json.error) {
-    Logger.log('Erro na Vision API: ' + responseText);
-    throw new Error('Erro na API do Google: ' + json.error.message);
+    Logger.log('Erro Vision API: ' + responseText);
+    throw new Error('Vision API Error: ' + json.error.message);
   }
 
   return json.responses[0];
