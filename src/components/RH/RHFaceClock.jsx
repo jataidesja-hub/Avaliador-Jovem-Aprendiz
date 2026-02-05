@@ -44,7 +44,8 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
             setError('Aguarde a câmera inicializar.');
             return;
         }
-        const emp = employees.find(e => e.matricula === matricula);
+        // Comparação flexível: converte ambos para string para garantir match
+        const emp = employees.find(e => String(e.matricula).trim() === String(matricula).trim());
         if (!emp) {
             setError('Matrícula não encontrada no sistema de RH.');
             return;
