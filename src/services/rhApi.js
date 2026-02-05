@@ -147,7 +147,8 @@ export const registerFace = async (faceData) => {
             data: {
                 matricula: faceData.matricula,
                 nome: faceData.nome,
-                faceData: faceData.faceData || 'REGISTERED'
+                // Agora aceita embedding como array de 128 floats ou string 'REGISTERED'
+                faceData: faceData.embedding ? JSON.stringify(faceData.embedding) : 'REGISTERED'
             }
         };
 
@@ -190,6 +191,22 @@ export const fetchFaceRegistrations = async () => {
         return data.map(item => String(item.matricula));
     } catch (error) {
         console.error('Error fetching face registrations:', error);
+        return [];
+    }
+};
+
+// Busca embeddings faciais completos para comparação
+export const fetchFaceEmbeddings = async () => {
+    try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=getFaceEmbeddings`);
+        const data = await response.json();
+        return data.map(item => ({
+            matricula: String(item.matricula),
+            nome: item.nome,
+            embedding: item.embedding ? JSON.parse(item.embedding) : null
+        })).filter(item => item.embedding && Array.isArray(item.embedding));
+    } catch (error) {
+        console.error('Error fetching face embeddings:', error);
         return [];
     }
 };

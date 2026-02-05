@@ -114,6 +114,26 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  // Embeddings Faciais completos (para comparação)
+  if (action === 'getFaceEmbeddings') {
+    const sheet = ss.getSheetByName(FACE_SHEET_NAME);
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify([]))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const data = sheet.getDataRange().getValues();
+    data.shift(); // remove headers
+    
+    const json = data.map(row => ({
+      matricula: row[1],
+      nome: row[2],
+      embedding: row[3] // FaceData column contains the embedding JSON
+    }));
+    
+    return ContentService.createTextOutput(JSON.stringify(json))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   // Lista de Aprendizes (padrão)
   const sheet = ss.getSheetByName(SHEET_NAME);
   const data = sheet.getDataRange().getValues();
