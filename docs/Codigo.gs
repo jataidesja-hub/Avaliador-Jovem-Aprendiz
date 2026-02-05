@@ -7,7 +7,8 @@
  * 5. Implemente o "Deploy" como Web App (Acesso: Anyone)
  */
 
-const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+// ⚠️ ID DA PLANILHA CORPORATIVA CONFIGURADO:
+const SPREADSHEET_ID = '1uLYO-cq9-awdGTjyJU6KsogiY3g_HjuMz1MhTE-TmR8';
 const SHEET_NAME = 'Aprendizes';
 const CONFIG_SHEET_NAME = 'Configs';
 const RH_SHEET_NAME = 'Colaboradores';

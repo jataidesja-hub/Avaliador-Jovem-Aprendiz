@@ -1,5 +1,5 @@
-// Integrado com Google Apps Script - Mesmo endpoint do módulo Jovem Aprendiz
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0-aS7kq7dq1N2EUYuRQFKbYV2DNBoDtpehT7weGAqRzygkonGaU0qBDn-hhQbGYhQcA/exec';
+// Integrado com Google Apps Script - Motor Pessoal (Bypass TI Agrovale)
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRhSUNC83qxR-Fo1BbbfjxDyZREiBW3JjjaAkegce-cq6RDoRSR7Sey7Nd3zkp-Bqn/exec';
 
 // Função auxiliar para chamadas POST (GAS CORS Hack)
 const gasPost = async (payload) => {
