@@ -69,9 +69,9 @@ export const detectFaceFromVideo = async (videoElement) => {
     }
 
     try {
-        // Opções otimizadas para TinyFaceDetector
+        // Opções ultra-otimizadas para TinyFaceDetector (128 é ideal para mobile)
         const options = new window.faceapi.TinyFaceDetectorOptions({
-            inputSize: 512, // Tamanho da entrada (128, 160, 224, 320, 416, 512, 608)
+            inputSize: 128,
             scoreThreshold: 0.5 // Confiança mínima
         });
 

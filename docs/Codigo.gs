@@ -15,6 +15,9 @@ const RH_CONFIG_SHEET_NAME = 'RH_Configs';
 const PONTO_SHEET_NAME = 'RegistrosPonto';
 const FACE_SHEET_NAME = 'CadastroFacial';
 
+// CHAVE DA GOOGLE CLOUD VISION API (Opcional - Necessária para detecção em nuvem)
+const GOOGLE_VISION_API_KEY = ''; 
+
 function doGet(e) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const action = e.parameter.action;
