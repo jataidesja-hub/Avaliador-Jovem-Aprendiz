@@ -17,10 +17,10 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     </motion.button>
 );
 
-export default function Sidebar({ activeTab, setActiveTab, onBackToMenu }) {
+export default function Sidebar({ activeTab, setActiveTab, onBackToMenu, module }) {
     const menuItems = [
         { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
-        { id: 'evaluations', label: 'Avaliações', icon: ClipboardList },
+        { id: 'evaluations', label: module === 'rh-gestao' ? 'Colaboradores' : 'Avaliações', icon: module === 'rh-gestao' ? UserPlus : ClipboardList },
         { id: 'register', label: 'Cadastro', icon: UserPlus },
     ];
 

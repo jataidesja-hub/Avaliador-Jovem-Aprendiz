@@ -5,8 +5,12 @@ import EvaluationBoard from './components/EvaluationBoard';
 import RegistrationModal from './components/RegistrationModal';
 import EvaluationModal from './components/EvaluationModal';
 import ModuleSelection from './components/ModuleSelection';
+import RHDashboard from './components/RH/RHDashboard';
+import RHCollaborators from './components/RH/RHCollaborators';
+import RHEmployeeModal from './components/RH/RHEmployeeModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchApprentices, saveApprentice, updateApprenticeEvaluation, updateApprentice, deleteApprentice, fetchConfigs, saveConfigs } from './services/api';
+import { fetchEmployees, saveEmployee, deleteEmployee } from './services/rhApi';
 import { Plus, Trash2, Building2, UserCheck, ArrowLeft } from 'lucide-react';
 
 function App() {
@@ -17,7 +21,12 @@ function App() {
   const [selectedApprentice, setSelectedApprentice] = useState(null);
   const [editingApprentice, setEditingApprentice] = useState(null);
   const [apprentices, setApprentices] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // RH Specific States
+  const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null);
 
   // Dynamic Config State
   const [sectors, setSectors] = useState(['Administrativo', 'Operacional', 'Manutenção', 'RH', 'Financeiro']);
@@ -25,12 +34,16 @@ function App() {
 
   const loadData = async () => {
     try {
-      const [apprenticeData, configData] = await Promise.all([
+      const [apprenticeData, configData, employeeData] = await Promise.all([
         fetchApprentices(),
-        fetchConfigs()
+        fetchConfigs(),
+        fetchEmployees()
       ]);
 
       setApprentices(apprenticeData);
+      setEmployees(employeeData);
+
+      // ... existing config logic
 
       // Merge backend configs with any unique ones from apprentice data
       const backendSectors = configData.sectors || [];
@@ -54,7 +67,8 @@ function App() {
 
   const handleTabChange = (tab) => {
     if (tab === 'register') {
-      setIsModalOpen(true);
+      if (currentModule === 'jovem-aprendiz') setIsModalOpen(true);
+      else setIsEmployeeModalOpen(true);
     } else {
       setActiveTab(tab);
     }
@@ -155,6 +169,23 @@ function App() {
     await saveConfigs(sectors, newSupervisors);
   };
 
+  // RH Handlers
+  const handleSaveEmployee = async (employeeData) => {
+    await saveEmployee(employeeData);
+    setEmployees(prev => {
+      const exists = prev.find(e => e.id === employeeData.id);
+      if (exists) return prev.map(e => e.id === employeeData.id ? employeeData : e);
+      return [...prev, { ...employeeData, id: Date.now() }];
+    });
+  };
+
+  const handleDeleteEmployee = async (id) => {
+    if (window.confirm("Deseja realmente excluir este colaborador?")) {
+      await deleteEmployee(id);
+      setEmployees(prev => prev.filter(e => e.id !== id));
+    }
+  };
+
   if (!currentModule) {
     return <ModuleSelection onSelectModule={setCurrentModule} />;
   }
@@ -178,7 +209,8 @@ function App() {
             </div>
           ) : (
             <AnimatePresence mode="wait">
-              {activeTab === 'dashboard' && (
+              {/* Jovem Aprendiz Tabs */}
+              {currentModule === 'jovem-aprendiz' && activeTab === 'dashboard' && (
                 <motion.div
                   key="dashboard"
                   initial={{ opacity: 0, y: 10 }}
@@ -190,7 +222,7 @@ function App() {
                 </motion.div>
               )}
 
-              {activeTab === 'evaluations' && (
+              {currentModule === 'jovem-aprendiz' && activeTab === 'evaluations' && (
                 <motion.div
                   key="evaluations"
                   initial={{ opacity: 0, y: 10 }}
@@ -205,6 +237,33 @@ function App() {
                     onEvaluate={handleEvaluate}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                  />
+                </motion.div>
+              )}
+
+              {/* RH Tabs */}
+              {currentModule === 'rh-gestao' && activeTab === 'dashboard' && (
+                <motion.div
+                  key="rh-dashboard"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <RHDashboard employees={employees} />
+                </motion.div>
+              )}
+
+              {currentModule === 'rh-gestao' && activeTab === 'evaluations' && (
+                <motion.div
+                  key="rh-collaborators"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <RHCollaborators
+                    employees={employees}
+                    onEdit={(emp) => { setEditingEmployee(emp); setIsEmployeeModalOpen(true); }}
+                    onDelete={handleDeleteEmployee}
                   />
                 </motion.div>
               )}
@@ -348,12 +407,23 @@ function App() {
         onSave={handleSaveEvaluation}
       />
 
+      {/* RH Specific Modals */}
+      <RHEmployeeModal
+        isOpen={isEmployeeModalOpen}
+        onClose={() => { setIsEmployeeModalOpen(false); setEditingEmployee(null); }}
+        onSave={handleSaveEmployee}
+        employee={editingEmployee}
+      />
+
       {/* Floating Action Button */}
       {!isLoading && (
         <motion.button
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            if (currentModule === 'jovem-aprendiz') setIsModalOpen(true);
+            else setIsEmployeeModalOpen(true);
+          }}
           className="fixed bottom-10 right-10 w-16 h-16 bg-falcao-navy text-white rounded-[22px] shadow-2xl shadow-falcao-navy/40 flex items-center justify-center hover:bg-black transition-all z-40 group"
         >
           <span className="text-3xl font-light group-hover:rotate-90 transition-transform duration-300">+</span>
