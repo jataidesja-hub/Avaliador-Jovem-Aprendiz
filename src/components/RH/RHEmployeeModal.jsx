@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, User, Briefcase, DollarSign, Calendar, Landmark, Check, Percent } from 'lucide-react';
+import { X, Save, User, Briefcase, DollarSign, Calendar, Landmark, Check, Hash } from 'lucide-react';
 
 const MultiSelect = ({ label, options, selected, onChange, icon: Icon }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -61,6 +61,7 @@ export default function RHEmployeeModal({ isOpen, onClose, onSave, employee = nu
 
     const [formData, setFormData] = useState({
         nome: '',
+        matricula: '',
         setor: '',
         empresa: '',
         salario: '',
@@ -77,7 +78,7 @@ export default function RHEmployeeModal({ isOpen, onClose, onSave, employee = nu
             });
         } else {
             setFormData({
-                nome: '', setor: '', empresa: '', salario: '',
+                nome: '', matricula: '', setor: '', empresa: '', salario: '',
                 adicionais: [], admissao: '', demissao: ''
             });
         }
@@ -138,6 +139,18 @@ export default function RHEmployeeModal({ isOpen, onClose, onSave, employee = nu
                                         <input
                                             required name="nome" value={formData.nome} onChange={handleChange}
                                             className="w-full bg-gray-50 border-none rounded-2xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-falcao-navy/20 font-medium"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Matrícula</label>
+                                    <div className="relative">
+                                        <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        <input
+                                            required name="matricula" value={formData.matricula} onChange={handleChange}
+                                            placeholder="Ex: 123456"
+                                            className="w-full bg-gray-50 border-none rounded-2xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-falcao-navy/20 font-medium font-mono"
                                         />
                                     </div>
                                 </div>

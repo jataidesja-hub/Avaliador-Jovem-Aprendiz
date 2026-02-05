@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ClipboardList, LayoutGrid, Users, Shield } from 'lucide-react';
+import { ClipboardList, LayoutGrid, Users, Shield, ScanFace } from 'lucide-react';
 
 const modules = [
   {
@@ -14,9 +14,17 @@ const modules = [
   {
     id: 'rh-gestao',
     title: 'Gestão de RH',
-    description: 'Controle de documentos, feedbacks e histórico profissional.',
+    description: 'Controle de colaboradores, cargos, adicionais e frequências.',
     icon: Users,
     color: 'bg-falcao-navy',
+    active: true
+  },
+  {
+    id: 'ponto-facial',
+    title: 'Ponto Facial',
+    description: 'Registro de entrada e saída via biometria facial.',
+    icon: ScanFace,
+    color: 'bg-orange-600',
     active: true
   }
 ];
@@ -42,7 +50,7 @@ export default function ModuleSelection({ onSelectModule }) {
         <p className="text-gray-500 font-medium">Bem-vindo ao ecossistema de gestão integrada.</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
         {modules.map((module, idx) => (
           <motion.button
             key={module.id}
@@ -63,8 +71,8 @@ export default function ModuleSelection({ onSelectModule }) {
 
             <div className="flex items-center gap-2">
               <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border ${module.active
-                  ? 'bg-falcao-navy/5 border-falcao-navy/10 text-falcao-navy'
-                  : 'bg-gray-100 border-gray-200 text-gray-400'
+                ? 'bg-falcao-navy/5 border-falcao-navy/10 text-falcao-navy'
+                : 'bg-gray-100 border-gray-200 text-gray-400'
                 }`}>
                 {module.active ? 'Acessar Agora' : 'Em Breve'}
               </span>

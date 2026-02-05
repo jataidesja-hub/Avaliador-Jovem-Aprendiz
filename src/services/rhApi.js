@@ -2,9 +2,9 @@
 export const fetchEmployees = async () => {
     // Simulação de dados
     const mockData = [
-        { id: 1, nome: 'João Silva', setor: 'Administrativo', empresa: 'Falcão Engenharia', salario: 3500, adicionais: 500, descontos: 200, admissao: '2023-01-10', demissao: '' },
-        { id: 2, nome: 'Maria Oliveira', setor: 'RH', empresa: 'Falcão Engenharia', salario: 4200, adicionais: 300, descontos: 150, admissao: '2022-05-15', demissao: '' },
-        { id: 3, nome: 'Pedro Santos', setor: 'Operacional', empresa: 'Falcão Engenharia', salario: 2800, adicionais: 400, descontos: 100, admissao: '2024-02-01', demissao: '' }
+        { id: 1, matricula: '1010', nome: 'João Silva', setor: 'Administrativo', empresa: 'Falcão Engenharia', salario: 3500, adicionais: 'Periculosidade', admissao: '2023-01-10', demissao: '' },
+        { id: 2, matricula: '1020', nome: 'Maria Oliveira', setor: 'RH', empresa: 'Falcão Engenharia', salario: 4200, adicionais: 'Gratificação', admissao: '2022-05-15', demissao: '' },
+        { id: 3, matricula: '1030', nome: 'Pedro Santos', setor: 'Operacional', empresa: 'Falcão Engenharia', salario: 2800, adicionais: 'Hora Extra', admissao: '2024-02-01', demissao: '' }
     ];
     return mockData;
 };

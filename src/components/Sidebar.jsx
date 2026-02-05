@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ClipboardList, UserPlus, Settings, LogOut, Shield, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, UserPlus, Settings, LogOut, Shield, ArrowLeft, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
@@ -21,6 +21,7 @@ export default function Sidebar({ activeTab, setActiveTab, onBackToMenu, module 
     const menuItems = [
         { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
         { id: 'evaluations', label: module === 'rh-gestao' ? 'Colaboradores' : 'Avaliações', icon: module === 'rh-gestao' ? UserPlus : ClipboardList },
+        ...(module === 'rh-gestao' ? [{ id: 'attendance', label: 'Frequência', icon: Clock }] : []),
         { id: 'register', label: 'Cadastro', icon: UserPlus },
     ];
 

@@ -21,6 +21,7 @@ export default function RHCollaborators({ employees = [], onEdit, onDelete }) {
                 <table className="w-full text-left">
                     <thead className="bg-falcao-navy text-white uppercase text-[10px] font-black tracking-widest">
                         <tr>
+                            <th className="px-8 py-6">Matrícula</th>
                             <th className="px-8 py-6">Nome</th>
                             <th className="px-8 py-6">Setor / Empresa</th>
                             <th className="px-8 py-6">Admissão</th>
@@ -32,13 +33,15 @@ export default function RHCollaborators({ employees = [], onEdit, onDelete }) {
                         {employees.length > 0 ? employees.map((emp) => (
                             <tr key={emp.id} className="hover:bg-falcao-navy/5 transition-colors group">
                                 <td className="px-8 py-5">
+                                    <p className="font-mono font-bold text-falcao-navy text-sm">#{emp.matricula || '---'}</p>
+                                </td>
+                                <td className="px-8 py-5">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-falcao-navy font-bold">
                                             {emp.nome.charAt(0)}
                                         </div>
                                         <div>
                                             <p className="font-bold text-gray-800">{emp.nome}</p>
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">ID: #{emp.id}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -65,7 +68,7 @@ export default function RHCollaborators({ employees = [], onEdit, onDelete }) {
                             </tr>
                         )) : (
                             <tr>
-                                <td colSpan="5" className="px-8 py-20 text-center text-gray-300 font-bold uppercase tracking-widest">
+                                <td colSpan="6" className="px-8 py-20 text-center text-gray-300 font-bold uppercase tracking-widest">
                                     Nenhum colaborador encontrado
                                 </td>
                             </tr>
