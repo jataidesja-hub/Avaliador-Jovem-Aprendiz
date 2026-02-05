@@ -1,33 +1,184 @@
-// TODO: Integrar com Google Apps Script quando Code.gs for atualizado
+// Integrado com Google Apps Script - Mesmo endpoint do módulo Jovem Aprendiz
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0-aS7kq7dq1N2EUYuRQFKbYV2DNBoDtpehT7weGAqRzygkonGaU0qBDn-hhQbGYhQcA/exec';
+
 export const fetchEmployees = async () => {
-    // Simulação de dados
-    const mockData = [
-        { id: 1, matricula: '1010', nome: 'João Silva', setor: 'Administrativo', empresa: 'Falcão Engenharia', salario: 3500, adicionais: 'Periculosidade', admissao: '2023-01-10', demissao: '' },
-        { id: 2, matricula: '1020', nome: 'Maria Oliveira', setor: 'RH', empresa: 'Falcão Engenharia', salario: 4200, adicionais: 'Gratificação', admissao: '2022-05-15', demissao: '' },
-        { id: 3, matricula: '1030', nome: 'Pedro Santos', setor: 'Operacional', empresa: 'Falcão Engenharia', salario: 2800, adicionais: 'Hora Extra', admissao: '2024-02-01', demissao: '' }
-    ];
-    return mockData;
+    try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=getEmployees`);
+        const data = await response.json();
+        return data.map(item => ({
+            id: item.id,
+            matricula: item.matricula,
+            nome: item.nome,
+            setor: item.setor,
+            empresa: item.empresa,
+            salario: parseFloat(item.salario) || 0,
+            adicionais: item.adicionais || '',
+            admissao: item.admissao,
+            demissao: item.demissao || ''
+        }));
+    } catch (error) {
+        console.error('Error fetching employees:', error);
+        return [];
+    }
 };
 
 export const saveEmployee = async (employee) => {
-    console.log('Salvando funcionário (Mock):', employee);
-    return { success: true };
+    try {
+        const isUpdate = employee.id && employee.id > 0;
+        const payload = {
+            action: isUpdate ? 'updateEmployee' : 'addEmployee',
+            data: {
+                matricula: employee.matricula,
+                nome: employee.nome,
+                setor: employee.setor,
+                empresa: employee.empresa,
+                salario: employee.salario,
+                adicionais: employee.adicionais,
+                admissao: employee.admissao,
+                demissao: employee.demissao || ''
+            }
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving employee:', error);
+        throw error;
+    }
 };
 
-export const deleteEmployee = async (id) => {
-    console.log('Deletando funcionário (Mock):', id);
-    return { success: true };
+export const deleteEmployee = async (matricula) => {
+    try {
+        const payload = {
+            action: 'deleteEmployee',
+            matricula: matricula
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting employee:', error);
+        throw error;
+    }
 };
 
 export const fetchRHConfigs = async () => {
-    return {
-        sectors: ['Administrativo', 'RH', 'Operacional', 'Vendas', 'T.I'],
-        companies: ['Falcão Engenharia', 'Falcão Logística', 'Falcão Serviços'],
-        additionTypes: ['Periculosidade', 'Insalubridade', 'Gratificação', 'Hora Extra']
-    };
+    try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=getRHConfigs`);
+        const data = await response.json();
+        return {
+            sectors: data.sectors || [],
+            companies: data.companies || [],
+            additionTypes: data.additionTypes || []
+        };
+    } catch (error) {
+        console.error('Error fetching RH configs:', error);
+        return { sectors: [], companies: [], additionTypes: [] };
+    }
 };
 
 export const saveRHConfigs = async (configs) => {
-    console.log('Salvando configurações de RH (Mock):', configs);
-    return { success: true };
+    try {
+        const payload = {
+            action: 'saveRHConfigs',
+            sectors: configs.sectors,
+            companies: configs.companies,
+            additionTypes: configs.additionTypes
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving RH configs:', error);
+        throw error;
+    }
+};
+
+// ==================== PONTO FACIAL ====================
+
+export const registerClockIn = async (clockData) => {
+    try {
+        const payload = {
+            action: 'registerClockIn',
+            data: {
+                matricula: clockData.matricula,
+                nome: clockData.nome,
+                setor: clockData.setor,
+                tipo: clockData.tipo || 'Entrada'
+            }
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error registering clock in:', error);
+        throw error;
+    }
+};
+
+export const registerFace = async (faceData) => {
+    try {
+        const payload = {
+            action: 'registerFace',
+            data: {
+                matricula: faceData.matricula,
+                nome: faceData.nome,
+                faceData: faceData.faceData || 'REGISTERED'
+            }
+        };
+
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error registering face:', error);
+        throw error;
+    }
+};
+
+export const fetchAttendanceLogs = async () => {
+    try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=getAttendanceLogs`);
+        const data = await response.json();
+        return data.map(item => ({
+            matricula: item.matricula,
+            nome: item.nome,
+            setor: item.setor,
+            data: item.data,
+            hora: item.hora,
+            tipo: item.tipo || 'Entrada'
+        }));
+    } catch (error) {
+        console.error('Error fetching attendance logs:', error);
+        return [];
+    }
 };

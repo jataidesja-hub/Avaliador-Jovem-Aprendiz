@@ -13,7 +13,7 @@ import RHAttendanceLogs from './components/RH/RHAttendanceLogs';
 import RHFaceClock from './components/RH/RHFaceClock';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchApprentices, saveApprentice, updateApprenticeEvaluation, updateApprentice, deleteApprentice, fetchConfigs, saveConfigs } from './services/api';
-import { fetchEmployees, saveEmployee, deleteEmployee, fetchRHConfigs, saveRHConfigs } from './services/rhApi';
+import { fetchEmployees, saveEmployee, deleteEmployee, fetchRHConfigs, saveRHConfigs, fetchAttendanceLogs } from './services/rhApi';
 import { Plus, Trash2, Building2, UserCheck, ArrowLeft } from 'lucide-react';
 
 function App() {
@@ -41,18 +41,18 @@ function App() {
 
   const loadData = async () => {
     try {
-      const [apprenticeData, configData, employeeData, rhConfigData] = await Promise.all([
+      const [apprenticeData, configData, employeeData, rhConfigData, logsData] = await Promise.all([
         fetchApprentices(),
         fetchConfigs(),
         fetchEmployees(),
-        fetchRHConfigs()
+        fetchRHConfigs(),
+        fetchAttendanceLogs()
       ]);
 
       setApprentices(apprenticeData);
       setEmployees(employeeData);
       setRhConfigs(rhConfigData);
-
-      // ... existing config logic
+      setAttendanceLogs(logsData);
 
       // Merge backend configs with any unique ones from apprentice data
       const backendSectors = configData.sectors || [];
@@ -63,12 +63,6 @@ function App() {
 
       setSectors([...new Set([...backendSectors, ...dataSectors])]);
       setSupervisors([...new Set([...backendSupervisors, ...dataSupervisors])]);
-
-      // Mock some attendance logs for now
-      setAttendanceLogs([
-        { nome: 'João Silva', matricula: '1010', data: '05/02/2026', hora: '08:00', setor: 'Administrativo' },
-        { nome: 'Maria Oliveira', matricula: '1020', data: '05/02/2026', hora: '08:15', setor: 'RH' }
-      ]);
     } catch (error) {
       console.error("Failed to load data:", error);
     } finally {

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Scan, UserCheck, ArrowLeft, RefreshCw, Hash, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { registerClockIn, registerFace } from '../../services/rhApi';
 
 export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
     const [mode, setMode] = useState('selection'); // selection, register, clock-in
@@ -38,7 +39,7 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
         }
     }, [mode, cameraActive]);
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         if (!cameraActive) {
             setError('Aguarde a câmera inicializar.');
             return;
@@ -50,7 +51,15 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
         }
         setScanning(true);
         setStatus('scanning');
-        setTimeout(() => {
+
+        try {
+            // Salva o cadastro facial na planilha
+            await registerFace({
+                matricula: emp.matricula,
+                nome: emp.nome,
+                faceData: 'REGISTERED'
+            });
+
             setScanning(false);
             setStatus('success');
             setTimeout(() => {
@@ -59,16 +68,21 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
                 setMatricula('');
                 stopCamera();
             }, 2000);
-        }, 3000);
+        } catch (err) {
+            setScanning(false);
+            setError('Erro ao cadastrar rosto. Tente novamente.');
+            setStatus('idle');
+        }
     };
 
-    const handleClockIn = () => {
+    const handleClockIn = async () => {
         if (!cameraActive) return;
 
         setScanning(true);
         setStatus('scanning');
-        // Simulating facial recognition logic
-        setTimeout(() => {
+
+        // Simulating facial recognition - em produção, aqui seria a detecção real
+        setTimeout(async () => {
             setScanning(false);
             const emp = employees[0] || { nome: 'Colaborador Teste', matricula: '0000', setor: 'Geral' };
             const now = new Date();
@@ -79,6 +93,19 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
                 hora: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
                 setor: emp.setor
             };
+
+            try {
+                // Salva o registro de ponto na planilha
+                await registerClockIn({
+                    matricula: emp.matricula,
+                    nome: emp.nome,
+                    setor: emp.setor,
+                    tipo: 'Entrada'
+                });
+            } catch (err) {
+                console.error('Erro ao salvar ponto:', err);
+            }
+
             onClockIn(log);
             setStatus('success');
             setTimeout(() => {
