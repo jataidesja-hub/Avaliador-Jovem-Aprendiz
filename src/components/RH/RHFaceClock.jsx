@@ -98,15 +98,31 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
     }, [mode, cameraActive, modelsReady, status]);
 
     const captureFrame = () => {
-        if (!videoRef.current) return null;
-        const canvas = document.createElement('canvas');
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1); // Espelhar de volta para salvar normal
-        ctx.drawImage(videoRef.current, 0, 0);
-        return canvas.toDataURL('image/jpeg', 0.5); // Qualidade reduzida para upload mais rápido
+        if (!videoRef.current || videoRef.current.videoWidth === 0) {
+            console.warn('Câmera não está pronta para captura (dimensões 0).');
+            return null;
+        }
+
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1); // Espelhar de volta para salvar normal
+            ctx.drawImage(videoRef.current, 0, 0);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+
+            if (!dataUrl || dataUrl.length < 100) {
+                console.error('Falha na geração do Base64 da imagem.');
+                return null;
+            }
+
+            return dataUrl;
+        } catch (err) {
+            console.error('Erro no canvas capture:', err);
+            return null;
+        }
     };
 
     const startContinuousDetection = () => {

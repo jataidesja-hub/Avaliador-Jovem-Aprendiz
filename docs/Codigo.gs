@@ -633,7 +633,8 @@ function callGoogleVision(imageBase64) {
   content = content.replace(/\s/g, ''); // Remove qualquer espaço ou quebra de linha
 
   if (!content || content.length < 100) {
-    throw new Error("O conteúdo da imagem está vazio ou é inválido (tamanho: " + (content ? content.length : 0) + ")");
+    Logger.log("Erro: Imagem recebida com tamanho insuficiente (" + (content ? content.length : 0) + ")");
+    throw new Error("Falha ao processar imagem da câmera. Por favor, recarregue a página ou verifique se sua câmera está funcionando.");
   }
 
   // Payload simplificado conforme documentação oficial v1
