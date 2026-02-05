@@ -32,7 +32,17 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
         setCameraActive(false);
     };
 
+    useEffect(() => {
+        if (mode === 'clock-in' && cameraActive && !scanning && status === 'idle') {
+            handleClockIn();
+        }
+    }, [mode, cameraActive]);
+
     const handleRegister = () => {
+        if (!cameraActive) {
+            setError('Aguarde a câmera inicializar.');
+            return;
+        }
         const emp = employees.find(e => e.matricula === matricula);
         if (!emp) {
             setError('Matrícula não encontrada no sistema de RH.');
@@ -47,11 +57,14 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
                 setMode('selection');
                 setStatus('idle');
                 setMatricula('');
+                stopCamera();
             }, 2000);
         }, 3000);
     };
 
     const handleClockIn = () => {
+        if (!cameraActive) return;
+
         setScanning(true);
         setStatus('scanning');
         // Simulating facial recognition logic
@@ -71,6 +84,7 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
             setTimeout(() => {
                 setMode('selection');
                 setStatus('idle');
+                stopCamera();
             }, 2500);
         }, 4000);
     };
@@ -91,7 +105,7 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
             >
                 <div className="w-full flex justify-start mb-8">
                     <button
-                        onClick={onBack}
+                        onClick={() => { stopCamera(); onBack(); }}
                         className="flex items-center gap-2 text-white/40 hover:text-white transition-colors font-bold uppercase tracking-widest text-[10px]"
                     >
                         <ArrowLeft size={16} />
@@ -154,6 +168,7 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
                                     ref={videoRef}
                                     autoPlay
                                     playsInline
+                                    style={{ transform: 'scaleX(-1)' }}
                                     className="w-full h-full object-cover grayscale opacity-80"
                                 />
 
@@ -197,7 +212,7 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
                                                 value={matricula}
                                                 onChange={(e) => { setMatricula(e.target.value); setError(''); }}
                                                 placeholder="0000"
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-orange-400/50 transition-all font-mono text-xl"
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-orange-400/50 transition-all font-mono text-xl text-white"
                                             />
                                         </div>
                                     </div>
@@ -212,18 +227,20 @@ export default function RHFaceClock({ onClockIn, employees = [], onBack }) {
 
                                 <div className="flex gap-4">
                                     <button
-                                        onClick={() => { setMode('selection'); stopCamera(); setError(''); }}
+                                        onClick={() => { stopCamera(); setMode('selection'); setError(''); }}
                                         className="flex-1 px-8 py-5 bg-white/5 text-white/60 font-black rounded-3xl hover:bg-white/10 transition-all uppercase tracking-widest text-xs border border-white/10"
                                     >
                                         Cancelar
                                     </button>
-                                    <button
-                                        onClick={mode === 'register' ? handleRegister : handleClockIn}
-                                        disabled={status === 'scanning' || status === 'success' || (mode === 'register' && !matricula)}
-                                        className="flex-1 px-8 py-5 bg-orange-600 text-white font-black rounded-3xl hover:bg-orange-500 transition-all shadow-xl shadow-orange-600/30 flex items-center justify-center gap-2 uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {status === 'scanning' ? <RefreshCw className="animate-spin" size={18} /> : (mode === 'register' ? 'Vincular Face' : 'Confirmar')}
-                                    </button>
+                                    {mode === 'register' && (
+                                        <button
+                                            onClick={handleRegister}
+                                            disabled={status === 'scanning' || status === 'success' || !matricula}
+                                            className="flex-1 px-8 py-5 bg-orange-600 text-white font-black rounded-3xl hover:bg-orange-500 transition-all shadow-xl shadow-orange-600/30 flex items-center justify-center gap-2 uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {status === 'scanning' ? <RefreshCw className="animate-spin" size={18} /> : 'Vincular Face'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
