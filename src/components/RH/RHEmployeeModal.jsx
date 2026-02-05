@@ -74,7 +74,12 @@ export default function RHEmployeeModal({ isOpen, onClose, onSave, employee = nu
         if (employee) {
             setFormData({
                 ...employee,
-                adicionais: Array.isArray(employee.adicionais) ? employee.adicionais : (employee.adicionais ? employee.adicionais.split(', ') : [])
+                matricula: employee.matricula || '',
+                adicionais: Array.isArray(employee.adicionais)
+                    ? employee.adicionais
+                    : (typeof employee.adicionais === 'string'
+                        ? (employee.adicionais ? employee.adicionais.split(', ') : [])
+                        : [])
             });
         } else {
             setFormData({
