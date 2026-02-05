@@ -17,7 +17,12 @@ import { fetchEmployees, saveEmployee, deleteEmployee, fetchRHConfigs, saveRHCon
 import { Plus, Trash2, Building2, UserCheck, ArrowLeft } from 'lucide-react';
 
 function App() {
-  const [currentModule, setCurrentModule] = useState(null); // 'jovem-aprendiz' or null
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentModule, setCurrentModule] = useState(() => {
+    const hash = window.location.hash;
+    if (hash === '#/ponto') return 'ponto-badge';
+    return null;
+  });
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEvalModalOpen, setIsEvalModalOpen] = useState(false);
@@ -25,7 +30,6 @@ function App() {
   const [editingApprentice, setEditingApprentice] = useState(null);
   const [apprentices, setApprentices] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   // RH Specific States
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
@@ -34,7 +38,6 @@ function App() {
     sectors: [], companies: [], additionTypes: []
   });
   const [attendanceLogs, setAttendanceLogs] = useState([]);
-  const [faceRegistrations, setFaceRegistrations] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Dynamic Config State
@@ -56,13 +59,10 @@ function App() {
       setRhConfigs(rhConfigData);
       setAttendanceLogs(logsData);
 
-      // Carregar cadastros faciais
-      try {
-        const faceData = await fetchFaceRegistrations();
-        setFaceRegistrations(faceData);
-      } catch (e) {
-        console.error('Error loading face registrations:', e);
-      }
+      setApprentices(apprenticeData);
+      setEmployees(employeeData);
+      setRhConfigs(rhConfigData);
+      setAttendanceLogs(logsData);
 
       // Merge backend configs with any unique ones from apprentice data
       const backendSectors = configData.sectors || [];
@@ -232,7 +232,7 @@ function App() {
     return <ModuleSelection onSelectModule={setCurrentModule} />;
   }
 
-  if (currentModule === 'ponto-badge' || currentModule === 'ponto-facial') {
+  if (currentModule === 'ponto-badge') {
     return (
       <RHBadgeClock
         onClockIn={(log) => setAttendanceLogs(prev => [log, ...prev])}

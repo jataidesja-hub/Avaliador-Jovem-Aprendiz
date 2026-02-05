@@ -385,7 +385,7 @@ export default function RHBadgeClock({ onClockIn, employees = [], onBack }) {
                     {!nfcSupported && (
                         <p className="text-yellow-500/80 mb-2">⚠️ NFC não ativo ou suportado. Use a entrada manual.</p>
                     )}
-                    <p>© 2026 Agrovale - Sistema de Biometria Híbrida v2.0</p>
+                    <p>© 2026 Agrovale - Ponto Digital NFC v2.1</p>
                 </div>
             </motion.div>
         </div>

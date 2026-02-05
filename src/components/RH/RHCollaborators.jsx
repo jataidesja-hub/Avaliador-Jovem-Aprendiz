@@ -1,13 +1,9 @@
 import React from 'react';
-import { Edit2, Trash2, Search, RefreshCw, ScanFace, XCircle } from 'lucide-react';
+import { Edit2, Trash2, Search, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function RHCollaborators({ employees = [], faceRegistrations = [], rhConfigs = {}, onEdit, onDelete, onRefresh, isRefreshing = false }) {
+export default function RHCollaborators({ employees = [], rhConfigs = {}, onEdit, onDelete, onRefresh, isRefreshing = false }) {
     const { additionTypes = [] } = rhConfigs;
-
-    const hasFaceRegistered = (matricula) => {
-        return faceRegistrations.includes(String(matricula));
-    };
 
     const calculateTotalSalary = (salary, adicionaisStr) => {
         const base = parseFloat(salary || 0);
@@ -52,7 +48,6 @@ export default function RHCollaborators({ employees = [], faceRegistrations = []
                             <th className="px-6 py-6">Matrícula</th>
                             <th className="px-6 py-6">Nome</th>
                             <th className="px-6 py-6">Setor / Empresa</th>
-                            <th className="px-6 py-6 border-l border-white/10 text-center">Cadastro</th>
                             <th className="px-6 py-6 text-right">Salário Total</th>
                             <th className="px-6 py-6 text-center">Ações</th>
                         </tr>
@@ -77,21 +72,6 @@ export default function RHCollaborators({ employees = [], faceRegistrations = []
                                 <td className="px-6 py-5">
                                     <p className="font-bold text-gray-700 text-sm">{emp?.setor || 'Sem Setor'}</p>
                                     <p className="text-xs text-gray-400">{emp?.empresa || 'Sem Empresa'}</p>
-                                </td>
-                                <td className="px-6 py-5 border-l border-gray-50 bg-gray-50/30">
-                                    <div className="flex flex-col items-center gap-1">
-                                        {emp?.matricula && hasFaceRegistered(emp.matricula) ? (
-                                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-600 rounded-full text-[9px] font-black uppercase">
-                                                <ScanFace size={10} />
-                                                Facial OK
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-500 rounded-full text-[9px] font-black uppercase">
-                                                <XCircle size={10} />
-                                                Facial Pendente
-                                            </span>
-                                        )}
-                                    </div>
                                 </td>
                                 <td className="px-6 py-5 text-right">
                                     <div className="flex flex-col items-end">

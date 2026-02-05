@@ -1,21 +1,46 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Building2, Landmark, DollarSign, Percent, Shield } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Plus, Trash2, Edit2, Check, X, Building2, Landmark, DollarSign, Percent, Shield } from 'lucide-react';
 
-const ConfigSection = ({ title, items, onAdd, onRemove, icon: Icon, placeholder, isAddition = false }) => {
+const ConfigSection = ({ title, items, onAdd, onRemove, onUpdate, icon: Icon, placeholder, isAddition = false }) => {
     const [inputValue, setInputValue] = useState('');
     const [amountValue, setAmountValue] = useState('');
+    const [editingIdx, setEditingIdx] = useState(null);
 
     const handleAdd = () => {
         if (inputValue.trim()) {
             if (isAddition) {
-                onAdd({ name: inputValue.trim(), value: parseFloat(amountValue || 0) });
+                const newItem = { name: inputValue.trim(), value: parseFloat(amountValue || 0) };
+                if (editingIdx !== null) {
+                    onUpdate(editingIdx, newItem);
+                } else {
+                    onAdd(newItem);
+                }
                 setAmountValue('');
             } else {
-                onAdd(inputValue.trim());
+                if (editingIdx !== null) {
+                    onUpdate(editingIdx, inputValue.trim());
+                } else {
+                    onAdd(inputValue.trim());
+                }
             }
             setInputValue('');
+            setEditingIdx(null);
         }
+    };
+
+    const startEdit = (item, idx) => {
+        setEditingIdx(idx);
+        if (isAddition) {
+            setInputValue(item.name);
+            setAmountValue(item.value);
+        } else {
+            setInputValue(item);
+        }
+    };
+
+    const cancelEdit = () => {
+        setEditingIdx(null);
+        setInputValue('');
+        setAmountValue('');
     };
 
     return (
@@ -46,12 +71,20 @@ const ConfigSection = ({ title, items, onAdd, onRemove, icon: Icon, placeholder,
                             className="w-24 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-falcao-navy/10 font-mono"
                         />
                     )}
-                    <button
-                        onClick={handleAdd}
-                        className="bg-falcao-navy text-white p-2 rounded-xl hover:bg-black transition-colors"
-                    >
-                        <Plus size={20} />
-                    </button>
+                    {editingIdx !== null ? (
+                        <>
+                            <button onClick={handleAdd} className="bg-green-500 text-white p-2 rounded-xl hover:bg-green-600 transition-colors">
+                                <Check size={20} />
+                            </button>
+                            <button onClick={cancelEdit} className="bg-gray-400 text-white p-2 rounded-xl hover:bg-gray-500 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </>
+                    ) : (
+                        <button onClick={handleAdd} className="bg-falcao-navy text-white p-2 rounded-xl hover:bg-black transition-colors">
+                            <Plus size={20} />
+                        </button>
+                    )}
                 </div>
 
                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
@@ -60,7 +93,7 @@ const ConfigSection = ({ title, items, onAdd, onRemove, icon: Icon, placeholder,
                         const value = typeof item === 'object' ? item.value : null;
 
                         return (
-                            <div key={idx} className="flex justify-between items-center group bg-white/60 p-3 rounded-xl border border-transparent hover:border-falcao-navy/20 transition-all">
+                            <div key={idx} className={`flex justify-between items-center group p-3 rounded-xl border transition-all ${editingIdx === idx ? 'bg-falcao-navy/5 border-falcao-navy/30' : 'bg-white/60 border-transparent hover:border-falcao-navy/20'}`}>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-medium text-gray-700">{name}</span>
                                     {value !== null && (
@@ -69,9 +102,14 @@ const ConfigSection = ({ title, items, onAdd, onRemove, icon: Icon, placeholder,
                                         </span>
                                     )}
                                 </div>
-                                <button onClick={() => onRemove(item)} className="text-red-400 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded-lg transition-all">
-                                    <Trash2 size={16} />
-                                </button>
+                                <div className="flex items-center gap-1">
+                                    <button onClick={() => startEdit(item, idx)} className="text-blue-400 opacity-0 group-hover:opacity-100 p-1 hover:bg-blue-50 rounded-lg transition-all">
+                                        <Edit2 size={16} />
+                                    </button>
+                                    <button onClick={() => onRemove(item)} className="text-red-400 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded-lg transition-all">
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
                             </div>
                         );
                     })}
@@ -99,6 +137,12 @@ export default function RHSettings({ configs, onUpdateConfigs }) {
         onUpdateConfigs({ ...configs, [key]: newItems });
     };
 
+    const handleUpdate = (key, idx, newValue) => {
+        const newItems = [...configs[key]];
+        newItems[idx] = newValue;
+        onUpdateConfigs({ ...configs, [key]: newItems });
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -118,6 +162,7 @@ export default function RHSettings({ configs, onUpdateConfigs }) {
                     items={configs.companies}
                     onAdd={(val) => handleAdd('companies', val)}
                     onRemove={(val) => handleRemove('companies', val)}
+                    onUpdate={(idx, val) => handleUpdate('companies', idx, val)}
                     icon={Landmark}
                     placeholder="Nova empresa..."
                 />
@@ -126,6 +171,7 @@ export default function RHSettings({ configs, onUpdateConfigs }) {
                     items={configs.sectors}
                     onAdd={(val) => handleAdd('sectors', val)}
                     onRemove={(val) => handleRemove('sectors', val)}
+                    onUpdate={(idx, val) => handleUpdate('sectors', idx, val)}
                     icon={Shield}
                     placeholder="Novo setor..."
                 />
@@ -134,6 +180,7 @@ export default function RHSettings({ configs, onUpdateConfigs }) {
                     items={configs.additionTypes}
                     onAdd={(val) => handleAdd('additionTypes', val)}
                     onRemove={(val) => handleRemove('additionTypes', val)}
+                    onUpdate={(idx, val) => handleUpdate('additionTypes', idx, val)}
                     icon={DollarSign}
                     placeholder="Novo adicional..."
                     isAddition={true}
