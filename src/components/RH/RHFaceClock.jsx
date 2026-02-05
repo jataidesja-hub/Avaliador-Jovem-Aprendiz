@@ -108,10 +108,15 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
             canvas.width = videoRef.current.videoWidth;
             canvas.height = videoRef.current.videoHeight;
             const ctx = canvas.getContext('2d');
+
+            // Melhoria de Imagem para IA: Aumentar levemente brilho e contraste
+            ctx.filter = 'brightness(1.1) contrast(1.1)';
+
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1); // Espelhar de volta para salvar normal
             ctx.drawImage(videoRef.current, 0, 0);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
             if (!dataUrl || dataUrl.length < 100) {
                 console.error('Falha na geração do Base64 da imagem.');
