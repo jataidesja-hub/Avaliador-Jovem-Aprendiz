@@ -453,53 +453,89 @@ function setup() {
  * Action para identificar face via Google Vision
  */
 function identifyFaceAction(imageBase64) {
-  const visionData = callGoogleVision(imageBase64);
-  
-  if (!visionData.faceAnnotations || visionData.faceAnnotations.length === 0) {
-    return { success: false, error: 'Nenhum rosto detectado pela IA do Google.' };
-  }
-
-  const face = visionData.faceAnnotations[0];
-  const landmarks = face.landmarks;
-  
-  // Buscar todos os cadastros
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const sheet = ss.getSheetByName(FACE_SHEET_NAME);
-  const data = sheet.getDataRange().getValues();
-  data.shift(); // remove headers
-  
-  let bestMatch = null;
-  let minDistance = Infinity;
-  
-  for (const row of data) {
-    const matricula = row[1];
-    const nome = row[2];
-    const storedFaceData = row[3];
+  try {
+    const visionData = callGoogleVision(imageBase64);
     
-    try {
-      const stored = JSON.parse(storedFaceData);
-      // Se for um cadastro da Vision API (tem landmarks)
-      if (stored.landmarks) {
-        const distance = calculateFaceDistance(landmarks, stored.landmarks);
-        if (distance < minDistance) {
-          minDistance = distance;
-          bestMatch = { matricula, nome };
-        }
-      }
-    } catch (e) {
-      // Ignora cadastros antigos (face-api.js) ou inválidos
+    if (!visionData.faceAnnotations || visionData.faceAnnotations.length === 0) {
+      Logger.log("Identificação: Nenhum rosto detectado na imagem enviada.");
+      return { success: false, error: 'A IA do Google não detectou nenhum rosto na imagem.' };
     }
-  }
 
-  // Threshold para landmarks (ajustável: 0.05 é rígido, 0.10 é tolerante)
-  const threshold = 0.08; 
-  
-  if (bestMatch && minDistance < threshold) {
-    Logger.log(`Sucesso: Identificado ${bestMatch.nome} com distância ${minDistance.toFixed(4)}`);
-    return { success: true, employee: bestMatch, distance: minDistance };
-  } else {
-    Logger.log(`Falha: Melhor match foi ${bestMatch ? bestMatch.nome : 'nenhum'} com distância ${minDistance.toFixed(4)} (threshold ${threshold})`);
-    return { success: false, error: 'Rosto não reconhecido. Tente se aproximar mais ou ficar em local mais iluminado.' };
+    const face = visionData.faceAnnotations[0];
+    const landmarks = face.landmarks;
+    
+    // Buscar todos os cadastros
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(FACE_SHEET_NAME);
+    const data = sheet.getDataRange().getValues();
+    data.shift(); // remove headers
+    
+    let bestMatch = null;
+    let minDistance = Infinity;
+    
+    Logger.log(`Iniciando comparação de rosto enviada contra ${data.length} cadastros.`);
+
+    for (const row of data) {
+      const matricula = row[1];
+      const nome = row[2];
+      const storedFaceData = row[3];
+      
+      try {
+        const stored = JSON.parse(storedFaceData);
+        if (stored.landmarks) {
+          const distance = calculateFaceDistance(landmarks, stored.landmarks);
+          Logger.log(`Distância para ${nome} (${matricula}): ${distance.toFixed(4)}`);
+          
+          if (distance < minDistance) {
+            minDistance = distance;
+            bestMatch = { matricula, nome };
+          }
+        }
+      } catch (e) {
+        // Ignora erros de parse
+      }
+    }
+
+    // Threshold ajustado para 0.12 (mais tolerante para envios móveis)
+    const threshold = 0.12; 
+    
+    if (bestMatch && minDistance < threshold) {
+      const confidence = Math.max(0, (1 - (minDistance / threshold)) * 100).toFixed(0);
+      Logger.log(`✅ SUCESSO: Identificado ${bestMatch.nome} com ${confidence}% de confiança.`);
+      return { 
+        success: true, 
+        employee: bestMatch, 
+        distance: minDistance,
+        confidence: confidence + "%"
+      };
+    } else {
+      Logger.log(`❌ FALHA: Nenhum rosto compatível. Melhor match: ${bestMatch ? bestMatch.nome : 'Nenhum'} (${minDistance.toFixed(4)} > ${threshold})`);
+      return { 
+        success: false, 
+        error: 'Rosto não reconhecido. Certifique-se de estar cadastrado e com boa iluminação.',
+        bestDistance: minDistance.toFixed(4)
+      };
+    }
+  } catch (err) {
+    Logger.log("Erro crítico na identificação: " + err.message);
+    return { success: false, error: "Erro no servidor da IA: " + err.message };
+  }
+}
+
+/**
+ * Função para você testar manualmente se sua API KEY está funcionando
+ * Rode esta função no Editor do Apps Script e veja o Log
+ */
+function testVisionAPI() {
+  const testImage = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="; // 1x1 pixel base64
+  try {
+    const result = callGoogleVision(testImage);
+    Logger.log("✅ Conexão com Google Vision OK!");
+    Logger.log("Resposta: " + JSON.stringify(result));
+    return "OK";
+  } catch (e) {
+    Logger.log("❌ Falha na API: " + e.message);
+    return "Erro: " + e.message;
   }
 }
 

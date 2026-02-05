@@ -126,8 +126,17 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
 
                 if (result.success && result.employee) {
                     clearInterval(scanIntervalRef.current);
-                    await handleSuccessfulRecognition(result.employee);
+                    if (result.confidence) {
+                        setStatus('success'); // Para mostrar o checkmark
+                        // Pequeno delay para o usuário ver o check antes de processar tudo
+                        setTimeout(() => handleSuccessfulRecognition(result.employee), 500);
+                    } else {
+                        await handleSuccessfulRecognition(result.employee);
+                    }
                     return;
+                } else if (result.error && !result.error.includes('IA do Google não detectou')) {
+                    // Se a IA detectou mas não reconheceu, podemos dar um feedback sutil
+                    console.log('IA detectou mas não reconheceu:', result.bestDistance);
                 }
             } catch (err) {
                 console.error('Erro na identificação em nuvem:', err);
