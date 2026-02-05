@@ -197,6 +197,7 @@ function App() {
         activeTab={activeTab}
         setActiveTab={handleTabChange}
         onBackToMenu={() => setCurrentModule(null)}
+        module={currentModule}
       />
 
       {/* Main Content Area */}
