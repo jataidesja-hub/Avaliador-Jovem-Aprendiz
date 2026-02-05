@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Plus, Trash2, Edit2, Check, X, Building2, Landmark, DollarSign, Percent, Shield } from 'lucide-react';
 
 const ConfigSection = ({ title, items, onAdd, onRemove, onUpdate, icon: Icon, placeholder, isAddition = false }) => {
