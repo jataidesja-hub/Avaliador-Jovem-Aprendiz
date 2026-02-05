@@ -16,15 +16,15 @@ const modules = [
     title: 'Gestão de RH',
     description: 'Controle de documentos, feedbacks e histórico profissional.',
     icon: Users,
-    color: 'bg-gray-400',
-    active: false
+    color: 'bg-falcao-navy',
+    active: true
   }
 ];
 
 export default function ModuleSelection({ onSelectModule }) {
   return (
     <div className="min-h-screen bg-falcao-soft-bg flex flex-col items-center justify-center p-6 font-inter">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-16"
@@ -49,25 +49,23 @@ export default function ModuleSelection({ onSelectModule }) {
             whileHover={module.active ? { scale: 1.02, y: -5 } : {}}
             whileTap={module.active ? { scale: 0.98 } : {}}
             onClick={() => module.active && onSelectModule(module.id)}
-            className={`glass p-10 rounded-[48px] text-left transition-all relative overflow-hidden group ${
-              !module.active ? 'opacity-60 cursor-not-allowed shadow-none' : 'hover:shadow-2xl hover:shadow-falcao-navy/10'
-            }`}
+            className={`glass p-10 rounded-[48px] text-left transition-all relative overflow-hidden group ${!module.active ? 'opacity-60 cursor-not-allowed shadow-none' : 'hover:shadow-2xl hover:shadow-falcao-navy/10'
+              }`}
           >
             <div className={`w-16 h-16 ${module.color} rounded-[22px] flex items-center justify-center text-white mb-8 shadow-lg`}>
               <module.icon size={28} />
             </div>
-            
+
             <h3 className="text-2xl font-black text-gray-800 mb-4 group-hover:text-falcao-navy transition-colors">{module.title}</h3>
             <p className="text-gray-500 font-medium leading-relaxed mb-6">
               {module.description}
             </p>
 
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border ${
-                module.active 
-                  ? 'bg-falcao-navy/5 border-falcao-navy/10 text-falcao-navy' 
+              <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border ${module.active
+                  ? 'bg-falcao-navy/5 border-falcao-navy/10 text-falcao-navy'
                   : 'bg-gray-100 border-gray-200 text-gray-400'
-              }`}>
+                }`}>
                 {module.active ? 'Acessar Agora' : 'Em Breve'}
               </span>
             </div>
