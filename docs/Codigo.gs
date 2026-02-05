@@ -485,13 +485,15 @@ function identifyFaceAction(imageBase64) {
     }
   }
 
-  // Threshold para landmarks (ajustável)
-  const threshold = 0.05; 
+  // Threshold para landmarks (ajustável: 0.05 é rígido, 0.10 é tolerante)
+  const threshold = 0.08; 
   
   if (bestMatch && minDistance < threshold) {
+    Logger.log(`Sucesso: Identificado ${bestMatch.nome} com distância ${minDistance.toFixed(4)}`);
     return { success: true, employee: bestMatch, distance: minDistance };
   } else {
-    return { success: false, error: 'Rosto não reconhecido no banco de dados do Google.' };
+    Logger.log(`Falha: Melhor match foi ${bestMatch ? bestMatch.nome : 'nenhum'} com distância ${minDistance.toFixed(4)} (threshold ${threshold})`);
+    return { success: false, error: 'Rosto não reconhecido. Tente se aproximar mais ou ficar em local mais iluminado.' };
   }
 }
 
@@ -499,23 +501,55 @@ function identifyFaceAction(imageBase64) {
  * Calcula a distância entre dois conjuntos de landmarks faciais
  */
 function calculateFaceDistance(l1, l2) {
-  // Simplificado: Compara posições relativas dos olhos e boca
-  // Em uma implementação real, usaríamos normalização por distância inter-ocular
-  let totalDist = 0;
-  const points = ['LEFT_EYE', 'RIGHT_EYE', 'NOSE_TIP', 'MOUTH_CENTER'];
-  
-  const getPoint = (list, type) => list.find(p => p.type === type).position;
-  
-  try {
-    points.forEach(p => {
-      const p1 = getPoint(l1, p);
-      const p2 = getPoint(l2, p);
-      totalDist += Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+  const getPoint = (list, type) => {
+    const p = list.find(p => p.type === type);
+    return p ? p.position : null;
+  };
+
+  const normalizePoints = (landmarks) => {
+    const leftEye = getPoint(landmarks, 'LEFT_EYE');
+    const rightEye = getPoint(landmarks, 'RIGHT_EYE');
+    
+    if (!leftEye || !rightEye) return null;
+
+    // Distância inter-ocular (IOD)
+    const iod = Math.sqrt(Math.pow(rightEye.x - leftEye.x, 2) + Math.pow(rightEye.y - leftEye.y, 2));
+    // Ponto médio entre os olhos
+    const midX = (leftEye.x + rightEye.x) / 2;
+    const midY = (leftEye.y + rightEye.y) / 2;
+
+    // Pontos críticos para comparação
+    const criticalPoints = ['LEFT_EYE', 'RIGHT_EYE', 'NOSE_TIP', 'MOUTH_LEFT', 'MOUTH_RIGHT', 'MOUTH_CENTER'];
+    
+    const normalized = {};
+    criticalPoints.forEach(pType => {
+      const p = getPoint(landmarks, pType);
+      if (p) {
+        normalized[pType] = {
+          x: (p.x - midX) / iod,
+          y: (p.y - midY) / iod
+        };
+      }
     });
-    return totalDist / 1000; // Normalização arbitrária para o threshold
-  } catch (e) {
-    return Infinity;
+    return normalized;
+  };
+
+  const n1 = normalizePoints(l1);
+  const n2 = normalizePoints(l2);
+
+  if (!n1 || !n2) return Infinity;
+
+  let totalDist = 0;
+  let count = 0;
+
+  for (const key in n1) {
+    if (n2[key]) {
+      totalDist += Math.sqrt(Math.pow(n1[key].x - n2[key].x, 2) + Math.pow(n1[key].y - n2[key].y, 2));
+      count++;
+    }
   }
+
+  return count > 0 ? totalDist / count : Infinity;
 }
 
 /**
@@ -535,8 +569,17 @@ function callGoogleVision(imageBase64) {
   const response = UrlFetchApp.fetch(url, {
     method: 'post',
     contentType: 'application/json',
-    payload: JSON.stringify(payload)
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
   });
 
-  return JSON.parse(response.getContentText()).responses[0];
+  const responseText = response.getContentText();
+  const json = JSON.parse(responseText);
+  
+  if (json.error) {
+    Logger.log('Erro na Vision API: ' + responseText);
+    throw new Error('Erro na API do Google: ' + json.error.message);
+  }
+
+  return json.responses[0];
 }
