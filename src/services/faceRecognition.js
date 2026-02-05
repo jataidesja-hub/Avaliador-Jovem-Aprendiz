@@ -33,13 +33,13 @@ export const loadFaceModels = async () => {
             console.log('Carregando modelos de reconhecimento facial...');
 
             await Promise.all([
-                window.faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+                window.faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
                 window.faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
                 window.faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
             ]);
 
             modelsLoaded = true;
-            console.log('Modelos carregados com sucesso!');
+            console.log('Modelos Tiny carregados com sucesso!');
             return true;
         } catch (error) {
             console.error('Erro ao carregar modelos:', error);
@@ -69,8 +69,14 @@ export const detectFaceFromVideo = async (videoElement) => {
     }
 
     try {
+        // Opções otimizadas para TinyFaceDetector
+        const options = new window.faceapi.TinyFaceDetectorOptions({
+            inputSize: 512, // Tamanho da entrada (128, 160, 224, 320, 416, 512, 608)
+            scoreThreshold: 0.5 // Confiança mínima
+        });
+
         const detection = await window.faceapi
-            .detectSingleFace(videoElement)
+            .detectSingleFace(videoElement, options)
             .withFaceLandmarks()
             .withFaceDescriptor();
 
