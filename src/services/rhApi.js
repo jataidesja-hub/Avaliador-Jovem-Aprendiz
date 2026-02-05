@@ -1,6 +1,17 @@
 // Integrado com Google Apps Script - Mesmo endpoint do módulo Jovem Aprendiz
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0-aS7kq7dq1N2EUYuRQFKbYV2DNBoDtpehT7weGAqRzygkonGaU0qBDn-hhQbGYhQcA/exec';
 
+// Função auxiliar para chamadas POST (GAS CORS Hack)
+const gasPost = async (payload) => {
+    const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        // Usamos text/plain para evitar o OPTIONS preflight que o GAS não suporta bem
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload),
+    });
+    return await response.json();
+};
+
 export const fetchEmployees = async () => {
     try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=getEmployees`);
@@ -38,14 +49,7 @@ export const saveEmployee = async (employee) => {
                 demissao: employee.demissao || ''
             }
         };
-
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        return await response.json();
+        return await gasPost(payload);
     } catch (error) {
         console.error('Error saving employee:', error);
         throw error;
@@ -58,14 +62,7 @@ export const deleteEmployee = async (matricula) => {
             action: 'deleteEmployee',
             matricula: matricula
         };
-
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        return await response.json();
+        return await gasPost(payload);
     } catch (error) {
         console.error('Error deleting employee:', error);
         throw error;
@@ -95,14 +92,7 @@ export const saveRHConfigs = async (configs) => {
             companies: configs.companies,
             additionTypes: configs.additionTypes
         };
-
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        return await response.json();
+        return await gasPost(payload);
     } catch (error) {
         console.error('Error saving RH configs:', error);
         throw error;
@@ -122,21 +112,13 @@ export const registerClockIn = async (clockData) => {
                 tipo: clockData.tipo || 'Entrada'
             }
         };
-
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        return await response.json();
+        return await gasPost(payload);
     } catch (error) {
         console.error('Error registering clock in:', error);
         throw error;
     }
 };
 
-// Registro facial (pode aceitar embedding ou imagem para processamento em nuvem)
 export const registerFace = async (faceData) => {
     try {
         const payload = {
@@ -144,37 +126,24 @@ export const registerFace = async (faceData) => {
             data: {
                 matricula: faceData.matricula,
                 nome: faceData.nome,
-                // Pode enviar embedding (local) ou image (nuvem)
                 faceData: faceData.embedding ? JSON.stringify(faceData.embedding) : null,
                 image: faceData.image || null
             }
         };
-
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        return await response.json();
+        return await gasPost(payload);
     } catch (error) {
         console.error('Error registering face:', error);
         throw error;
     }
 };
 
-// Nova função para identificar face na nuvem (Google Vision)
 export const identifyFaceOnCloud = async (imageBase64) => {
     try {
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'identifyFace',
-                data: { image: imageBase64 }
-            }),
-        });
-        return await response.json();
+        const payload = {
+            action: 'identifyFace',
+            data: { image: imageBase64 }
+        };
+        return await gasPost(payload);
     } catch (error) {
         console.error('Error identifying face on cloud:', error);
         return { success: false, error: 'Erro de conexão com o servidor.' };
@@ -210,7 +179,6 @@ export const fetchFaceRegistrations = async () => {
     }
 };
 
-// Busca embeddings faciais completos para comparação
 export const fetchFaceEmbeddings = async () => {
     try {
         const response = await fetch(`${APPS_SCRIPT_URL}?action=getFaceEmbeddings`);
