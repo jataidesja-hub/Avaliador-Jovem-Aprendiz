@@ -56,7 +56,11 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
     const startCamera = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'user', width: 640, height: 480 }
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
             });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
@@ -116,7 +120,8 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                 const descriptor = await detectFaceFromVideo(videoRef.current);
 
                 if (descriptor) {
-                    const result = findMatchingFace(descriptor, faceEmbeddings, 0.6);
+                    // Threshold levemente ajustado para 0.65 para ser mais tolerante em diferentes condições de luz
+                    const result = findMatchingFace(descriptor, faceEmbeddings, 0.65);
 
                     if (result.matched && result.employee) {
                         clearInterval(scanIntervalRef.current);
@@ -281,7 +286,7 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                             <Scan size={56} />
                         </motion.div>
 
-                        <h1 className="text-4xl font-black mb-2">PONTO FACIAL</h1>
+                        <h1 className="text-4xl font-black mb-2 uppercase">Ponto Facial</h1>
                         <p className="text-gray-400 mb-10">Sistema de Reconhecimento Biométrico</p>
 
                         {modelsReady && (
@@ -326,14 +331,14 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                     <div className="text-center">
                         <h2 className="text-2xl font-black mb-6">CADASTRO FACIAL</h2>
 
-                        <div className="relative rounded-3xl overflow-hidden mb-6 bg-black aspect-video shadow-2xl">
+                        <div className="relative rounded-[40px] overflow-hidden mb-8 bg-black aspect-square shadow-2xl border-4 border-white/10 max-w-[400px] mx-auto">
                             <video
                                 ref={videoRef}
                                 autoPlay
                                 playsInline
                                 muted
                                 className="w-full h-full object-cover"
-                                style={{ transform: 'scaleX(-1)' }}
+                                style={{ transform: 'scaleX(-1) scale(1.1)' }}
                             />
 
                             {scanning && (
@@ -399,14 +404,14 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
                     <div className="text-center">
                         <h2 className="text-2xl font-black mb-6">REGISTRAR PONTO</h2>
 
-                        <div className="relative rounded-3xl overflow-hidden mb-6 bg-black aspect-video shadow-2xl">
+                        <div className="relative rounded-[40px] overflow-hidden mb-8 bg-black aspect-square shadow-2xl border-4 border-white/10 max-w-[400px] mx-auto">
                             <video
                                 ref={videoRef}
                                 autoPlay
                                 playsInline
                                 muted
                                 className="w-full h-full object-cover"
-                                style={{ transform: 'scaleX(-1)' }}
+                                style={{ transform: 'scaleX(-1) scale(1.1)' }}
                             />
 
                             {scanning && (
