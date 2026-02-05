@@ -316,6 +316,7 @@ function App() {
                   <RHCollaborators
                     employees={employees}
                     faceRegistrations={faceRegistrations}
+                    rhConfigs={rhConfigs}
                     onEdit={(emp) => { setEditingEmployee(emp); setIsEmployeeModalOpen(true); }}
                     onDelete={handleDeleteEmployee}
                     onRefresh={handleRefresh}

@@ -5,10 +5,10 @@ import { X, Save, User, Briefcase, DollarSign, Calendar, Landmark, Check, Hash }
 const MultiSelect = ({ label, options, selected, onChange, icon: Icon }) => {
     const [isOpen, setIsOpen] = useState(false);
 
-    const toggleOption = (option) => {
-        const newSelected = selected.includes(option)
-            ? selected.filter(i => i !== option)
-            : [...selected, option];
+    const toggleOption = (optionName) => {
+        const newSelected = selected.includes(optionName)
+            ? selected.filter(i => i !== optionName)
+            : [...selected, optionName];
         onChange(newSelected);
     };
 
@@ -38,16 +38,23 @@ const MultiSelect = ({ label, options, selected, onChange, icon: Icon }) => {
                             exit={{ opacity: 0, y: 10 }}
                             className="absolute z-[120] left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 max-h-48 overflow-y-auto p-2"
                         >
-                            {options.map(option => (
-                                <div
-                                    key={option}
-                                    onClick={() => toggleOption(option)}
-                                    className="flex justify-between items-center px-4 py-2 hover:bg-falcao-navy/5 rounded-xl cursor-pointer transition-all"
-                                >
-                                    <span className="text-sm font-medium text-gray-700">{option}</span>
-                                    {selected.includes(option) && <Check size={14} className="text-falcao-navy" />}
-                                </div>
-                            ))}
+                            {options.map(option => {
+                                const name = typeof option === 'object' ? option.name : option;
+                                const value = typeof option === 'object' ? option.value : null;
+                                return (
+                                    <div
+                                        key={name}
+                                        onClick={() => toggleOption(name)}
+                                        className="flex justify-between items-center px-4 py-2 hover:bg-falcao-navy/5 rounded-xl cursor-pointer transition-all"
+                                    >
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-gray-700">{name}</span>
+                                            {value && <span className="text-[10px] text-gray-400 font-bold">R$ {parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>}
+                                        </div>
+                                        {selected.includes(name) && <Check size={14} className="text-falcao-navy" />}
+                                    </div>
+                                );
+                            })}
                         </motion.div>
                     </>
                 )}

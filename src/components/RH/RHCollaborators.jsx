@@ -2,9 +2,23 @@ import React from 'react';
 import { Edit2, Trash2, Search, RefreshCw, ScanFace, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function RHCollaborators({ employees = [], faceRegistrations = [], onEdit, onDelete, onRefresh, isRefreshing = false }) {
+export default function RHCollaborators({ employees = [], faceRegistrations = [], rhConfigs = {}, onEdit, onDelete, onRefresh, isRefreshing = false }) {
+    const { additionTypes = [] } = rhConfigs;
+
     const hasFaceRegistered = (matricula) => {
         return faceRegistrations.includes(String(matricula));
+    };
+
+    const calculateTotalSalary = (salary, adicionaisStr) => {
+        const base = parseFloat(salary || 0);
+        const selectedAdds = typeof adicionaisStr === 'string' ? adicionaisStr.split(', ').filter(Boolean) : [];
+
+        const sumAdds = selectedAdds.reduce((acc, addName) => {
+            const addConfig = additionTypes.find(a => a.name === addName);
+            return acc + (addConfig ? parseFloat(addConfig.value || 0) : 0);
+        }, 0);
+
+        return base + sumAdds;
     };
 
     return (
@@ -38,9 +52,8 @@ export default function RHCollaborators({ employees = [], faceRegistrations = []
                             <th className="px-6 py-6">Matrícula</th>
                             <th className="px-6 py-6">Nome</th>
                             <th className="px-6 py-6">Setor / Empresa</th>
-                            <th className="px-6 py-6">Admissão</th>
-                            <th className="px-6 py-6 text-center">Facial</th>
-                            <th className="px-6 py-6 text-right">Salário</th>
+                            <th className="px-6 py-6 border-l border-white/10 text-center">Cadastro</th>
+                            <th className="px-6 py-6 text-right">Salário Total</th>
                             <th className="px-6 py-6 text-center">Ações</th>
                         </tr>
                     </thead>
@@ -57,6 +70,7 @@ export default function RHCollaborators({ employees = [], faceRegistrations = []
                                         </div>
                                         <div>
                                             <p className="font-bold text-gray-800">{emp?.nome || 'Sem Nome'}</p>
+                                            <p className="text-[10px] text-gray-400 font-medium">ADMISSÃO: {emp?.admissao && !isNaN(new Date(emp.admissao).getTime()) ? new Date(emp.admissao).toLocaleDateString('pt-BR') : '---'}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -64,26 +78,32 @@ export default function RHCollaborators({ employees = [], faceRegistrations = []
                                     <p className="font-bold text-gray-700 text-sm">{emp?.setor || 'Sem Setor'}</p>
                                     <p className="text-xs text-gray-400">{emp?.empresa || 'Sem Empresa'}</p>
                                 </td>
-                                <td className="px-6 py-5">
-                                    <p className="text-sm font-medium text-gray-600">
-                                        {emp?.admissao && !isNaN(new Date(emp.admissao).getTime()) ? new Date(emp.admissao).toLocaleDateString('pt-BR') : '---'}
-                                    </p>
-                                </td>
-                                <td className="px-6 py-5 text-center">
-                                    {emp?.matricula && hasFaceRegistered(emp.matricula) ? (
-                                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-600 rounded-full text-[10px] font-black uppercase">
-                                            <ScanFace size={12} />
-                                            Cadastrada
-                                        </span>
-                                    ) : (
-                                        <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-500 rounded-full text-[10px] font-black uppercase">
-                                            <XCircle size={12} />
-                                            Pendente
-                                        </span>
-                                    )}
+                                <td className="px-6 py-5 border-l border-gray-50 bg-gray-50/30">
+                                    <div className="flex flex-col items-center gap-1">
+                                        {emp?.matricula && hasFaceRegistered(emp.matricula) ? (
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-600 rounded-full text-[9px] font-black uppercase">
+                                                <ScanFace size={10} />
+                                                Facial OK
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-500 rounded-full text-[9px] font-black uppercase">
+                                                <XCircle size={10} />
+                                                Facial Pendente
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-5 text-right">
-                                    <p className="font-black text-falcao-navy">R$ {parseFloat(emp?.salario || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                    <div className="flex flex-col items-end">
+                                        <p className="font-black text-falcao-navy text-lg leading-none">
+                                            R$ {calculateTotalSalary(emp?.salario, emp?.adicionais).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        </p>
+                                        {emp?.adicionais && (
+                                            <p className="text-[9px] text-falcao-navy/40 font-bold uppercase mt-1">
+                                                +{emp.adicionais}
+                                            </p>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-5">
                                     <div className="flex items-center justify-center gap-2">
@@ -99,7 +119,7 @@ export default function RHCollaborators({ employees = [], faceRegistrations = []
                         ))
                             : (
                                 <tr>
-                                    <td colSpan="7" className="px-8 py-20 text-center text-gray-300 font-bold uppercase tracking-widest">
+                                    <td colSpan="6" className="px-8 py-20 text-center text-gray-300 font-bold uppercase tracking-widest">
                                         Nenhum colaborador encontrado
                                     </td>
                                 </tr>

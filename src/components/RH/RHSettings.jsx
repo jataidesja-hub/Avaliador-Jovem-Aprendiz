@@ -2,12 +2,18 @@ import React, { useState } from 'react';
 import { Plus, Trash2, Building2, Landmark, DollarSign, Percent, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const ConfigSection = ({ title, items, onAdd, onRemove, icon: Icon, placeholder }) => {
+const ConfigSection = ({ title, items, onAdd, onRemove, icon: Icon, placeholder, isAddition = false }) => {
     const [inputValue, setInputValue] = useState('');
+    const [amountValue, setAmountValue] = useState('');
 
     const handleAdd = () => {
         if (inputValue.trim()) {
-            onAdd(inputValue.trim());
+            if (isAddition) {
+                onAdd({ name: inputValue.trim(), value: parseFloat(amountValue || 0) });
+                setAmountValue('');
+            } else {
+                onAdd(inputValue.trim());
+            }
             setInputValue('');
         }
     };
@@ -31,6 +37,15 @@ const ConfigSection = ({ title, items, onAdd, onRemove, icon: Icon, placeholder 
                         placeholder={placeholder}
                         className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-falcao-navy/10"
                     />
+                    {isAddition && (
+                        <input
+                            type="number"
+                            value={amountValue}
+                            onChange={(e) => setAmountValue(e.target.value)}
+                            placeholder="R$ 0,00"
+                            className="w-24 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-falcao-navy/10 font-mono"
+                        />
+                    )}
                     <button
                         onClick={handleAdd}
                         className="bg-falcao-navy text-white p-2 rounded-xl hover:bg-black transition-colors"
@@ -40,14 +55,26 @@ const ConfigSection = ({ title, items, onAdd, onRemove, icon: Icon, placeholder 
                 </div>
 
                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
-                    {items.map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center group bg-white/60 p-3 rounded-xl border border-transparent hover:border-falcao-navy/20 transition-all">
-                            <span className="text-sm font-medium text-gray-700">{item}</span>
-                            <button onClick={() => onRemove(item)} className="text-red-400 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded-lg transition-all">
-                                <Trash2 size={16} />
-                            </button>
-                        </div>
-                    ))}
+                    {items.map((item, idx) => {
+                        const name = typeof item === 'object' ? item.name : item;
+                        const value = typeof item === 'object' ? item.value : null;
+
+                        return (
+                            <div key={idx} className="flex justify-between items-center group bg-white/60 p-3 rounded-xl border border-transparent hover:border-falcao-navy/20 transition-all">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-700">{name}</span>
+                                    {value !== null && (
+                                        <span className="bg-falcao-navy/10 text-falcao-navy text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                            R$ {parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        </span>
+                                    )}
+                                </div>
+                                <button onClick={() => onRemove(item)} className="text-red-400 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded-lg transition-all">
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
@@ -56,13 +83,20 @@ const ConfigSection = ({ title, items, onAdd, onRemove, icon: Icon, placeholder 
 
 export default function RHSettings({ configs, onUpdateConfigs }) {
     const handleAdd = (key, value) => {
-        if (!configs[key].includes(value)) {
+        const exists = key === 'additionTypes'
+            ? configs[key].some(i => i.name === value.name)
+            : configs[key].includes(value);
+
+        if (!exists) {
             onUpdateConfigs({ ...configs, [key]: [...configs[key], value] });
         }
     };
 
     const handleRemove = (key, value) => {
-        onUpdateConfigs({ ...configs, [key]: configs[key].filter(i => i !== value) });
+        const newItems = key === 'additionTypes'
+            ? configs[key].filter(i => (typeof i === 'object' ? i.name !== value.name : i !== value))
+            : configs[key].filter(i => i !== value);
+        onUpdateConfigs({ ...configs, [key]: newItems });
     };
 
     return (
@@ -102,6 +136,7 @@ export default function RHSettings({ configs, onUpdateConfigs }) {
                     onRemove={(val) => handleRemove('additionTypes', val)}
                     icon={DollarSign}
                     placeholder="Novo adicional..."
+                    isAddition={true}
                 />
             </div>
         </motion.div>

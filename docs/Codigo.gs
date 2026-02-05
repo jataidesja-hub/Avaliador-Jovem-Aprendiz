@@ -50,7 +50,10 @@ function doGet(e) {
     
     const sectors = data.filter(r => r[0] === 'Sector').map(r => r[1]);
     const companies = data.filter(r => r[0] === 'Company').map(r => r[1]);
-    const additionTypes = data.filter(r => r[0] === 'AdditionType').map(r => r[1]);
+    const additionTypes = data.filter(r => r[0] === 'AdditionType').map(r => {
+      const parts = String(r[1]).split('|');
+      return { name: parts[0], value: parseFloat(parts[1] || 0) };
+    });
     
     return ContentService.createTextOutput(JSON.stringify({ sectors, companies, additionTypes }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -182,7 +185,10 @@ function doPost(e) {
     sheet.appendRow(['Type', 'Value']);
     (params.sectors || []).forEach(s => sheet.appendRow(['Sector', s]));
     (params.companies || []).forEach(s => sheet.appendRow(['Company', s]));
-    (params.additionTypes || []).forEach(s => sheet.appendRow(['AdditionType', s]));
+    (params.additionTypes || []).forEach(s => {
+      const val = (s && typeof s === 'object') ? `${s.name}|${s.value}` : s;
+      sheet.appendRow(['AdditionType', val]);
+    });
     return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
       .setMimeType(ContentService.MimeType.JSON);
   }
