@@ -103,14 +103,6 @@ export default function RHSettings({ configs, onUpdateConfigs }) {
                     icon={DollarSign}
                     placeholder="Novo adicional..."
                 />
-                <ConfigSection
-                    title="Tipos de Descontos"
-                    items={configs.discountTypes}
-                    onAdd={(val) => handleAdd('discountTypes', val)}
-                    onRemove={(val) => handleRemove('discountTypes', val)}
-                    icon={Percent}
-                    placeholder="Novo desconto..."
-                />
             </div>
         </motion.div>
     );

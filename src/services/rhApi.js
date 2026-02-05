@@ -23,8 +23,7 @@ export const fetchRHConfigs = async () => {
     return {
         sectors: ['Administrativo', 'RH', 'Operacional', 'Vendas', 'T.I'],
         companies: ['Falcão Engenharia', 'Falcão Logística', 'Falcão Serviços'],
-        additionTypes: ['Periculosidade', 'Insalubridade', 'Gratificação', 'Hora Extra'],
-        discountTypes: ['Vale Transporte', 'Vale Refeição', 'Plano de Saúde', 'Faltas']
+        additionTypes: ['Periculosidade', 'Insalubridade', 'Gratificação', 'Hora Extra']
     };
 };
 

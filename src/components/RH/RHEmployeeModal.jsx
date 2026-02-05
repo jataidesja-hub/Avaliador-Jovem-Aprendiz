@@ -57,42 +57,37 @@ const MultiSelect = ({ label, options, selected, onChange, icon: Icon }) => {
 };
 
 export default function RHEmployeeModal({ isOpen, onClose, onSave, employee = null, configs = {} }) {
-    const { sectors = [], companies = [], additionTypes = [], discountTypes = [] } = configs;
+    const { sectors = [], companies = [], additionTypes = [] } = configs;
 
     const [formData, setFormData] = useState({
         nome: '',
-        setor: [],
+        setor: '',
         empresa: '',
         salario: '',
-        adicionais: '',
-        descontos: [],
+        adicionais: [],
         admissao: '',
         demissao: ''
     });
 
     useEffect(() => {
         if (employee) {
-            // Ensure arrays for multi-select
             setFormData({
                 ...employee,
-                setor: Array.isArray(employee.setor) ? employee.setor : (employee.setor ? employee.setor.split(', ') : []),
-                descontos: Array.isArray(employee.descontos) ? employee.descontos : (employee.descontos ? employee.descontos.split(', ') : [])
+                adicionais: Array.isArray(employee.adicionais) ? employee.adicionais : (employee.adicionais ? employee.adicionais.split(', ') : [])
             });
         } else {
             setFormData({
-                nome: '', setor: [], empresa: '', salario: '',
-                adicionais: '', descontos: [], admissao: '', demissao: ''
+                nome: '', setor: '', empresa: '', salario: '',
+                adicionais: [], admissao: '', demissao: ''
             });
         }
     }, [employee, isOpen]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Convert arrays back to strings if necessary for backend, or leave as array
         const dataToSave = {
             ...formData,
-            setor: formData.setor.join(', '),
-            descontos: formData.descontos.join(', ')
+            adicionais: formData.adicionais.join(', ')
         };
         onSave(dataToSave);
         onClose();
@@ -161,13 +156,19 @@ export default function RHEmployeeModal({ isOpen, onClose, onSave, employee = nu
                                     </div>
                                 </div>
 
-                                <MultiSelect
-                                    label="Setores (Pode escolher mais de 1)"
-                                    options={sectors}
-                                    selected={formData.setor}
-                                    onChange={(val) => setFormData(prev => ({ ...prev, setor: val }))}
-                                    icon={Briefcase}
-                                />
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Setor</label>
+                                    <div className="relative">
+                                        <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        <select
+                                            required name="setor" value={formData.setor} onChange={handleChange}
+                                            className="w-full bg-gray-50 border-none rounded-2xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-falcao-navy/20 font-medium appearance-none"
+                                        >
+                                            <option value="">Selecione...</option>
+                                            {sectors.map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Salário Base</label>
@@ -180,23 +181,12 @@ export default function RHEmployeeModal({ isOpen, onClose, onSave, employee = nu
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tipo de Adicional</label>
-                                    <select
-                                        name="adicionais" value={formData.adicionais} onChange={handleChange}
-                                        className="w-full bg-gray-50 border-none rounded-2xl py-3 px-4 focus:ring-2 focus:ring-falcao-navy/20 font-medium appearance-none"
-                                    >
-                                        <option value="">Nenhum</option>
-                                        {additionTypes.map(a => <option key={a} value={a}>{a}</option>)}
-                                    </select>
-                                </div>
-
                                 <MultiSelect
-                                    label="Descontos (Pode escolher mais de 1)"
-                                    options={discountTypes}
-                                    selected={formData.descontos}
-                                    onChange={(val) => setFormData(prev => ({ ...prev, descontos: val }))}
-                                    icon={Percent}
+                                    label="Tipos de Adicionais (Pode escolher mais de 1)"
+                                    options={additionTypes}
+                                    selected={formData.adicionais}
+                                    onChange={(val) => setFormData(prev => ({ ...prev, adicionais: val }))}
+                                    icon={DollarSign}
                                 />
 
                                 <div className="space-y-2">
@@ -210,7 +200,7 @@ export default function RHEmployeeModal({ isOpen, onClose, onSave, employee = nu
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
+                                <div className="space-y-2 col-span-1 md:col-span-2">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Data Demissão (Opcional)</label>
                                     <input
                                         type="date" name="demissao" value={formData.demissao} onChange={handleChange}

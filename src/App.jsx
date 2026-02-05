@@ -29,7 +29,7 @@ function App() {
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [rhConfigs, setRhConfigs] = useState({
-    sectors: [], companies: [], additionTypes: [], discountTypes: []
+    sectors: [], companies: [], additionTypes: []
   });
 
   // Dynamic Config State
