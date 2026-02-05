@@ -144,10 +144,19 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
         setScanning(false);
 
         // Buscar dados completos do colaborador
-        const emp = employees.find(e => String(e.matricula).trim() === String(matchedEmployee.matricula).trim());
+        if (!employees || !matchedEmployee) {
+            setStatus('error');
+            setError('Falha na comunicação com o banco de dados.');
+            return;
+        }
+
+        const emp = employees.find(e =>
+            e && e.matricula && String(e.matricula).trim() === String(matchedEmployee.matricula).trim()
+        );
+
         if (!emp) {
             setStatus('error');
-            setError('Colaborador não encontrado no sistema.');
+            setError(`Colaborador (Matrícula ${matchedEmployee.matricula}) não encontrado.`);
             return;
         }
 
@@ -176,8 +185,8 @@ export default function RHFaceClock({ onClockIn, employees = [], attendanceLogs 
         try {
             await registerClockIn({
                 matricula: emp.matricula,
-                nome: emp.nome,
-                setor: emp.setor,
+                nome: emp.nome || 'Sem Nome',
+                setor: emp.setor || 'Geral',
                 tipo: nextType
             });
 

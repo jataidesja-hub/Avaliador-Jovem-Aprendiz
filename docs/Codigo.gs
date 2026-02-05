@@ -339,19 +339,8 @@ function doPost(e) {
       sheet.appendRow(['Timestamp', 'Matricula', 'Nome', 'FaceData']);
     }
     const d = params.data;
-    // Verifica se já existe cadastro para essa matrícula
-    const rows = sheet.getDataRange().getValues();
-    for (let i = 1; i < rows.length; i++) {
-      if (rows[i][1].toString() === d.matricula.toString()) {
-        // Atualiza o registro existente
-        sheet.getRange(i + 1, 1).setValue(new Date());
-        sheet.getRange(i + 1, 4).setValue(d.faceData || 'REGISTERED');
-        return ContentService.createTextOutput(JSON.stringify({ status: 'updated' }))
-          .setMimeType(ContentService.MimeType.JSON);
-      }
-    }
-    // Novo cadastro
-    // Se d.image estiver presente, usar Google Vision para extrair landmarks
+
+    // Se d.image estiver presente, usar Google Vision para extrair landmarks PRIMEIRO
     if (d.image) {
       try {
         const visionData = callGoogleVision(d.image);
@@ -362,12 +351,29 @@ function doPost(e) {
           });
         }
       } catch (e) {
-        // Fallback para o que veio no faceData ou erro
+        Logger.log("Erro ao extrair landmarks no registro: " + e.message);
       }
     }
 
-    sheet.appendRow([new Date(), d.matricula, d.nome, d.faceData || 'REGISTERED']);
-    return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+    // Verifica se já existe cadastro para essa matrícula para atualizar ou inserir
+    const rows = sheet.getDataRange().getValues();
+    let found = false;
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i][1].toString() === d.matricula.toString()) {
+        const rowNumber = i + 1;
+        sheet.getRange(rowNumber, 1).setValue(new Date());
+        sheet.getRange(rowNumber, 3).setValue(d.nome);
+        sheet.getRange(rowNumber, 4).setValue(d.faceData || 'REGISTERED');
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      sheet.appendRow([new Date(), d.matricula, d.nome, d.faceData || 'REGISTERED']);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ status: found ? 'updated' : 'success' }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 

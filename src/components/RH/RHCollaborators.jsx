@@ -45,32 +45,32 @@ export default function RHCollaborators({ employees = [], faceRegistrations = []
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {employees.length > 0 ? employees.map((emp) => (
-                            <tr key={emp.id} className="hover:bg-falcao-navy/5 transition-colors group">
+                        {employees && employees.length > 0 ? employees.map((emp) => (
+                            <tr key={emp?.id || Math.random()} className="hover:bg-falcao-navy/5 transition-colors group">
                                 <td className="px-6 py-5">
-                                    <p className="font-mono font-bold text-falcao-navy text-sm">#{emp.matricula || '---'}</p>
+                                    <p className="font-mono font-bold text-falcao-navy text-sm">#{emp?.matricula || '---'}</p>
                                 </td>
                                 <td className="px-6 py-5">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-falcao-navy font-bold">
-                                            {emp.nome.charAt(0)}
+                                            {emp?.nome ? emp.nome.charAt(0).toUpperCase() : '?'}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-gray-800">{emp.nome}</p>
+                                            <p className="font-bold text-gray-800">{emp?.nome || 'Sem Nome'}</p>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-5">
-                                    <p className="font-bold text-gray-700 text-sm">{emp.setor}</p>
-                                    <p className="text-xs text-gray-400">{emp.empresa}</p>
+                                    <p className="font-bold text-gray-700 text-sm">{emp?.setor || 'Sem Setor'}</p>
+                                    <p className="text-xs text-gray-400">{emp?.empresa || 'Sem Empresa'}</p>
                                 </td>
                                 <td className="px-6 py-5">
                                     <p className="text-sm font-medium text-gray-600">
-                                        {emp.admissao ? new Date(emp.admissao).toLocaleDateString('pt-BR') : '---'}
+                                        {emp?.admissao && !isNaN(new Date(emp.admissao).getTime()) ? new Date(emp.admissao).toLocaleDateString('pt-BR') : '---'}
                                     </p>
                                 </td>
                                 <td className="px-6 py-5 text-center">
-                                    {hasFaceRegistered(emp.matricula) ? (
+                                    {emp?.matricula && hasFaceRegistered(emp.matricula) ? (
                                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-600 rounded-full text-[10px] font-black uppercase">
                                             <ScanFace size={12} />
                                             Cadastrada
@@ -83,26 +83,27 @@ export default function RHCollaborators({ employees = [], faceRegistrations = []
                                     )}
                                 </td>
                                 <td className="px-6 py-5 text-right">
-                                    <p className="font-black text-falcao-navy">R$ {parseFloat(emp.salario || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                    <p className="font-black text-falcao-navy">R$ {parseFloat(emp?.salario || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                 </td>
                                 <td className="px-6 py-5">
                                     <div className="flex items-center justify-center gap-2">
                                         <button onClick={() => onEdit(emp)} className="p-2 hover:bg-white rounded-xl text-blue-600 transition-all shadow-sm shadow-transparent hover:shadow-blue-100">
                                             <Edit2 size={16} />
                                         </button>
-                                        <button onClick={() => onDelete(emp.matricula)} className="p-2 hover:bg-white rounded-xl text-red-500 transition-all shadow-sm shadow-transparent hover:shadow-red-500/10">
+                                        <button onClick={() => onDelete(emp?.matricula)} className="p-2 hover:bg-white rounded-xl text-red-500 transition-all shadow-sm shadow-transparent hover:shadow-red-500/10">
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
                                 </td>
                             </tr>
-                        )) : (
-                            <tr>
-                                <td colSpan="7" className="px-8 py-20 text-center text-gray-300 font-bold uppercase tracking-widest">
-                                    Nenhum colaborador encontrado
-                                </td>
-                            </tr>
-                        )}
+                        ))
+                            : (
+                                <tr>
+                                    <td colSpan="7" className="px-8 py-20 text-center text-gray-300 font-bold uppercase tracking-widest">
+                                        Nenhum colaborador encontrado
+                                    </td>
+                                </tr>
+                            )}
                     </tbody>
                 </table>
             </div>
