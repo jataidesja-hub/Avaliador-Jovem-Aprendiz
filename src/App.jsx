@@ -4,11 +4,13 @@ import Dashboard from './components/Dashboard';
 import EvaluationBoard from './components/EvaluationBoard';
 import RegistrationModal from './components/RegistrationModal';
 import EvaluationModal from './components/EvaluationModal';
+import ModuleSelection from './components/ModuleSelection';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchApprentices, saveApprentice, updateApprenticeEvaluation, updateApprentice, deleteApprentice, fetchConfigs, saveConfigs } from './services/api';
-import { Plus, Trash2, Building2, UserCheck } from 'lucide-react';
+import { Plus, Trash2, Building2, UserCheck, ArrowLeft } from 'lucide-react';
 
 function App() {
+  const [currentModule, setCurrentModule] = useState(null); // 'jovem-aprendiz' or null
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEvalModalOpen, setIsEvalModalOpen] = useState(false);
@@ -153,10 +155,18 @@ function App() {
     await saveConfigs(sectors, newSupervisors);
   };
 
+  if (!currentModule) {
+    return <ModuleSelection onSelectModule={setCurrentModule} />;
+  }
+
   return (
     <div className="flex min-h-screen bg-falcao-soft-bg text-gray-800 font-inter antialiased" lang="pt-BR">
       {/* Sidebar Navigation */}
-      <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} />
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={handleTabChange}
+        onBackToMenu={() => setCurrentModule(null)}
+      />
 
       {/* Main Content Area */}
       <main className="flex-1 ml-64 p-10">

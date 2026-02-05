@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ClipboardList, UserPlus, Settings, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, UserPlus, Settings, LogOut, Shield, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
@@ -17,7 +17,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     </motion.button>
 );
 
-export default function Sidebar({ activeTab, setActiveTab }) {
+export default function Sidebar({ activeTab, setActiveTab, onBackToMenu }) {
     const menuItems = [
         { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
         { id: 'evaluations', label: 'Avaliações', icon: ClipboardList },
@@ -54,6 +54,11 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                     label="Configurações"
                     active={activeTab === 'settings'}
                     onClick={() => setActiveTab('settings')}
+                />
+                <SidebarItem
+                    icon={ArrowLeft}
+                    label="Voltar ao Menu"
+                    onClick={onBackToMenu}
                 />
                 <SidebarItem icon={LogOut} label="Sair" />
             </div>

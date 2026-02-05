@@ -76,7 +76,7 @@ export default function Dashboard({ apprentices = [] }) {
     return (
         <div className="space-y-10 pb-10">
             <header>
-                <h2 className="text-4xl font-black text-falcao-navy tracking-tight">Painel de Controle</h2>
+                <h2 className="text-4xl font-black text-falcao-navy tracking-tight">Painel de Avaliação</h2>
                 <p className="text-gray-400 font-medium mt-1">Bem-vindo ao sistema de gestão Falcão Engenharia.</p>
             </header>
 
