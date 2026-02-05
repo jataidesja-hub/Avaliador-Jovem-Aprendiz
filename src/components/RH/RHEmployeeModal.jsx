@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, User, Briefcase, DollarSign, Calendar, Landmark, Check } from 'lucide-react';
+import { X, Save, User, Briefcase, DollarSign, Calendar, Landmark, Check, Percent } from 'lucide-react';
 
 const MultiSelect = ({ label, options, selected, onChange, icon: Icon }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -42,7 +42,7 @@ const MultiSelect = ({ label, options, selected, onChange, icon: Icon }) => {
                                 <div
                                     key={option}
                                     onClick={() => toggleOption(option)}
-                                    className="flex justify-between items-center px-4 py-2 hover:bg-falcao-navy/5 rounded-xl cursor-not-allowed transition-all"
+                                    className="flex justify-between items-center px-4 py-2 hover:bg-falcao-navy/5 rounded-xl cursor-pointer transition-all"
                                 >
                                     <span className="text-sm font-medium text-gray-700">{option}</span>
                                     {selected.includes(option) && <Check size={14} className="text-falcao-navy" />}
