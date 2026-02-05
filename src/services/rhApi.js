@@ -18,3 +18,17 @@ export const deleteEmployee = async (id) => {
     console.log('Deletando funcionário (Mock):', id);
     return { success: true };
 };
+
+export const fetchRHConfigs = async () => {
+    return {
+        sectors: ['Administrativo', 'RH', 'Operacional', 'Vendas', 'T.I'],
+        companies: ['Falcão Engenharia', 'Falcão Logística', 'Falcão Serviços'],
+        additionTypes: ['Periculosidade', 'Insalubridade', 'Gratificação', 'Hora Extra'],
+        discountTypes: ['Vale Transporte', 'Vale Refeição', 'Plano de Saúde', 'Faltas']
+    };
+};
+
+export const saveRHConfigs = async (configs) => {
+    console.log('Salvando configurações de RH (Mock):', configs);
+    return { success: true };
+};
